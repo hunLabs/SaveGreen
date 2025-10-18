@@ -87,6 +87,15 @@
             ? Math.round((savingKwh / beforeKwh) * 100)
             : 0;
 
+        try {
+            // [교체] 멀티라인 요약(kv) 사용
+            SaveGreen.log.kv('kpi', 'kpi snapshot', {
+                savingPct,
+                savingCostYr: Math.round(savingCost),
+                paybackYears: Number((Math.round(paybackYears * 10) / 10).toFixed(1))
+            }, ['savingPct','savingCostYr','paybackYears']);
+        } catch {}
+
         return {
             savingCostYr: savingCost,   // 연간 비용 절감(원)
             savingKwhYr:  savingKwh,    // 연간 사용량 절감(kWh)
@@ -94,8 +103,6 @@
             paybackYears                 // 회수기간(년)
         };
     }
-
-
 
     // 상태 판정(점수 + 라벨)
     function decideStatusByScore(kpi, opts = {}) {
@@ -136,9 +143,110 @@
 		return { status, label: status, score };
 	}
 
-	// 전역/네임스페이스에 노출(기존 호출부 그대로 동작)
+	// [추가] ─────────────────────────────────────────────────────────────
+	// KPI 도메인 보조 함수 3종 (IIFE 안쪽, decideStatusByScore 바로 아래에 배치)
+	// - main.js에 남아 있던 '순수 계산로직'을 본 KPI 모듈로 이관
+	// - DOM 접근/렌더링 없음(순수 함수) → 단위 테스트/재사용 용이
+	// 사용처:
+	//   1) main.js → SaveGreen.Forecast.KPI.computeCurrentEui(...)
+	//   2) main.js → SaveGreen.Forecast.KPI.pickGradeByRules(...)
+	//   3) main.js → SaveGreen.Forecast.KPI.getBoundaryForGrade(...)
+	// 주의:
+	//   - 여기(IIFE) '안쪽'이 맞습니다. 아래 export 묶음에 포함시켜 외부에서 접근하도록 합니다.
+
+	/**
+	 * 현재 EUI 계산(마지막 after ÷ 면적)
+	 * @param {{series:{after:number[]}}} data
+	 * @param {number} floorArea
+	 * @returns {number|null}
+	 */
+	function computeCurrentEui(data, floorArea) {
+		if (!Array.isArray(data?.series?.after) || !Number.isFinite(floorArea) || floorArea <= 0) return null;
+		const afterArr = data.series.after;
+		const last = Number(afterArr[afterArr.length - 1]);
+		if (!Number.isFinite(last) || last <= 0) return null;
+		return Math.round(last / floorArea);
+	}
+
+	/**
+	 * EUI 룰 기반 등급 산정
+	 * - mode === 'electricity' : thresholds {1,2,3} 기준
+	 * - mode === 'primary'    : PEF 적용 후 bands[min,max,grade]
+	 * @param {number} euiSite  현장(site) EUI
+	 * @param {{mode?:string, electricityGradeThresholds?:object, pef?:{electricity:number}, primaryGradeBands?:Array}} rules
+	 * @returns {number|string|null} 숫자 등급(1~4) 또는 문자열 등급(예: "1+"), 없으면 null
+	 */
+	function pickGradeByRules(euiSite, rules) {
+		if (!rules || !Number.isFinite(euiSite)) return null;
+		const mode = (rules.mode || 'electricity').toLowerCase();
+
+		if (mode === 'electricity') {
+			const th = rules.electricityGradeThresholds || {};
+			const g1 = Number(th['1']), g2 = Number(th['2']), g3 = Number(th['3']);
+			if (Number.isFinite(g1) && euiSite <= g1) return 1;
+			if (Number.isFinite(g2) && euiSite <= g2) return 2;
+			if (Number.isFinite(g3) && euiSite <= g3) return 3;
+			return 4;
+		}
+
+		// primary 모드: PEF 적용 뒤 bands 구간 매칭
+		const pef = Number(rules?.pef?.electricity);
+		const euiPrimary = Number.isFinite(pef) ? euiSite * pef : euiSite;
+		const bands = Array.isArray(rules.primaryGradeBands) ? rules.primaryGradeBands : [];
+		for (const b of bands) {
+			const min = Number(b.min), max = Number(b.max);
+			if (Number.isFinite(min) && Number.isFinite(max) && euiPrimary >= min && euiPrimary < max) {
+				const g = (b.grade || '').toString().trim();
+				return g || null; // 문자열 등급(예: "1++")
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 목표 등급 경계(EUI 또는 1차EUI) 조회
+	 * - 다음 등급으로 '올라가기' 위한 경계값을 rules에서 찾아 반환
+	 * @param {number|string} targetGrade 목표 등급(숫자 또는 문자열)
+	 * @param {*} rules KPI rules(json from dae.json)
+	 * @returns {{value:number, unit:string, kind:'site'|'primary'}|null}
+	 */
+	function getBoundaryForGrade(targetGrade, rules) {
+		if (!rules) return null;
+		const mode = (rules.mode || 'electricity').toLowerCase();
+
+		if (mode === 'electricity') {
+			const th = rules.electricityGradeThresholds || {};
+			const key = String(targetGrade ?? '');
+			if (th[key] != null) return { value: Number(th[key]), unit: 'kWh/m²/년', kind: 'site' };
+			return null;
+		}
+
+		const bands = Array.isArray(rules.primaryGradeBands) ? rules.primaryGradeBands : [];
+		const target = bands.find(b => String(b.grade) === String(targetGrade));
+		if (target && Number.isFinite(target.max)) {
+			return { value: Number(target.max), unit: 'kWhₚ/m²/년', kind: 'primary' };
+		}
+		return null;
+	}
+	// [추가 끝] ───────────────────────────────────────────────────────────
+
+
+	// [수정] 전역/네임스페이스에 노출(기존 + KPI 네임스페이스 동시 제공)
 	window.computeKpis = computeKpis;
 	window.decideStatusByScore = decideStatusByScore;
+
 	window.SaveGreen.Forecast.computeKpis = computeKpis;
 	window.SaveGreen.Forecast.decideStatusByScore = decideStatusByScore;
+
+	// [추가] KPI 서브 네임스페이스로 순수 도메인 로직을 묶어서 노출
+	window.SaveGreen.Forecast.KPI = Object.assign(
+		window.SaveGreen.Forecast.KPI || {},
+		{
+			computeKpis,
+			decideStatusByScore,
+			computeCurrentEui,
+			pickGradeByRules,
+			getBoundaryForGrade
+		}
+	);
 })();

@@ -170,16 +170,29 @@
 						<div class="skeleton s-line"></div>
 					</article>
 
-					<article class="card preload-card inverted" id="preload-assumption">
-						<h4>예측 가정</h4>
-						<!-- 1줄: 전력단가 · 상승률 · 할인율 -->
-						<p id="assumption-line-1" class="mono"></p>
-						<!-- 2줄: 배출계수 · 효율개선  (없으면 요금제 · 가동률) -->
-						<p id="assumption-line-2" class="mono"></p>
-						<p class="sub">기간·단가 등 가정치는 설정에서 조정할 수 있습니다.</p>
-						<div class="skeleton s-line"></div>
-					</article>
-				</div>
+                    <article class="card preload-card inverted" id="preload-assumption">
+                        <h4>예측 가정</h4>
+
+                        <!-- ▼ 좌측 카드와 동일한 레이아웃(kv: label/value 2열) -->
+                        <div id="assumption-kv" class="kv" style="grid-template-columns:104px 1fr; column-gap:12px;">
+                            <div class="k">전력단가</div>
+                            <div class="v" id="assump-tariff"></div>
+
+                            <div class="k">계산 기준</div>
+                            <div class="v" id="assump-basis"></div>
+                        </div>
+
+                        <!-- 하단 고정 영역: 기간/슬라이더/설명/스켈레톤 -->
+                        <div id="assumption-footer">
+                            <p id="assumption-period" class="mono"></p>
+                            <div id="assumption-slider"></div>
+                            <p class="sub">기간 · 단가 등 가정치는 설정에서 조정할 수 있습니다.</p>
+                            <div class="skeleton s-line" id="assumption-skeleton"></div>
+                        </div>
+                    </article>
+
+
+                </div>
 
 				<div class="preload-foot">
 					<div id="risk-badges" class="badges" aria-label="리스크 지표"></div>

@@ -68,6 +68,7 @@
 	 * - GreenFinder(선행 검색)에서 sessionStorage 에 남긴 정보를 모아
 	 *   Forecast 컨텍스트의 씨앗으로 사용한다.
 	 * - 하나라도 값이 있으면 객체를 반환; 전무하면 null.
+	 * - ✨ 세션에 씨드가 전무하면 "프록시(VWorld) 폴백 가능"을 info 로그로 알린다.
 	 */
 	function sniffSessionForBuilding() {
 		try {
@@ -98,7 +99,7 @@
 			const lonNum = Number(lonRaw);
 
 			const o = {
-                // 표준 필드
+				// 표준 필드
 				pnu: pnu || undefined,
 				jibunAddr: jibunAddr || undefined,
 				lat: Number.isFinite(latNum) ? latNum : undefined,
@@ -114,9 +115,11 @@
 				to: String(NOW_YEAR + HORIZON_YEARS)
 			};
 
-			return Object.values(o).some(v => v != null && String(v).trim() !== '') ? o : null;
+			// ✨ 세션에 의미있는 씨드가 전무하면 VWorld 프록시 폴백 가능성을 사전 안내
+			const __ok = Object.values(o).some(v => v != null && String(v).trim() !== '');
+			return __ok ? o : (SaveGreen.log.info('provider', 'session (GreenFinder) provided no usable seed → proxy(vworld) may be used'), null);
 		} catch (e) {
-			console.warn('[provider] sniffSessionForBuilding error:', e);
+			SaveGreen.log.warn('provider', 'session sniff error', e);
 			return null;
 		}
 	}
@@ -124,9 +127,8 @@
 	/* ---------- 컨텍스트 보강(도로명/지번/건물명) ---------- */
 	/**
 	 * enrichContext(ctx)
-	 * - seed 로 받은 좌표(lon/lat) 또는 pnu 만으로 부족할 때
-	 *   서버 프록시(/api/ext/vworld/*)를 이용해 도로명/지번/건물명을 보강.
-	 * - FE 는 원본 JSON 을 수용하고, 키는 방어적으로 매핑한다.
+	 * - VWorld 프록시 엔드포인트를 사용해 roadAddr/jibunAddr/buildingName 을 보강.
+	 * - ctx 는 불변으로 취급하고, 필요한 값만 채워 넣은 새 객체를 반환.
 	 */
 	async function enrichContext(ctx) {
 		// 원본 변조 방지
@@ -154,23 +156,20 @@
 						out.buildingName = j2?.buldNm || j2?.buildingName || j2?.buld_name || out.buildingName;
 					}
 				} catch (e2) {
-					console.warn('[provider] buildingName fetch skipped:', e2);
+					SaveGreen.log.warn('provider', 'buildingName fetch skipped', e2);
 				}
 			}
 		} catch (e) {
-			console.warn('[provider] enrichContext error:', e);
+			SaveGreen.log.warn(
+				'provider',
+				'enrichContext failed (proxy/vworld unreachable or invalid response)',
+				e
+			);
 		}
-
 		return out;
 	}
 
-	/* 네임스페이스로 보강 API 노출(디버깅/수동 보강) */
-	window.SaveGreen = window.SaveGreen || {};
-	window.SaveGreen.Forecast = window.SaveGreen.Forecast || {};
-	window.SaveGreen.Forecast.providers = window.SaveGreen.Forecast.providers || {};
-	window.SaveGreen.Forecast.providers.enrichContext = enrichContext;
-
-	/* ---------- config & useName → 표준 타입 매핑 유틸 ---------- */
+	/* ---------- 타입 매핑/dae.json 접근 유틸 ---------- */
 	(function () {
 		window.SaveGreen = window.SaveGreen || {};
 		window.SaveGreen.Forecast = window.SaveGreen.Forecast || {};
@@ -192,70 +191,132 @@
 		};
 		const norm = (s) => (s == null ? '' : String(s).trim().toLowerCase().replace(/\s+/g, ''));
 
-		function mapUseNameToType(useName) {
-			const key = norm(useName);
-			if (!key) return null;
-			if (USE_TYPE_MAP[key]) return USE_TYPE_MAP[key];
-			for (const k in USE_TYPE_MAP) {
-				if (key.includes(norm(k))) return USE_TYPE_MAP[k];
-			}
-			return null;
-		}
 
-		// 건물명/주소 키워드로 휴리스틱 추론(용도명 없을 때 보조)
-		function mapFromTextHeuristics(txt) {
-			const s = norm(txt);
-			if (!s) return null;
-			if (s.includes('병원') || s.includes('의료') || s.includes('치과') || s.includes('의원')) return 'hospital';
-			if (s.includes('초등학교') || s.includes('중학교') || s.includes('고등학교') || s.includes('대학교') || s.includes('학교')) return 'school';
-			if (s.includes('공장') || s.includes('산업') || s.includes('제조')) return 'factory';
-			if (s.includes('오피스') || s.includes('사무') || s.includes('업무')) return 'office';
-			return null;
-		}
+        // 이미 표준 타입이면 그대로 통과시키는 헬퍼
+        function isCoreType(t) {
+            if (!t) return false;
+            const s = String(t).trim().toLowerCase();
+            return s === 'office' || s === 'factory' || s === 'school' || s === 'hospital';
+        }
 
-		// 컨텍스트에서 표준 타입 결정(우선순위: useName → buildingName → address → ctx.type)
-		function pickTypeFromContext(ctx) {
-			let t = mapUseNameToType(ctx?.useName);
-			if (!t) t = mapFromTextHeuristics(ctx?.buildingName);
-			if (!t) t = mapFromTextHeuristics(ctx?.address || ctx?.jibunAddr || ctx?.roadAddr);
-			if (!t && ['factory','school','hospital','office'].includes(norm(ctx?.type))) t = norm(ctx?.type);
-			try { console.log('[providers] type pick:', { useName: ctx?.useName, buildingName: ctx?.buildingName, addr: ctx?.address || ctx?.jibunAddr, mapped: t }); } catch {}
-			return t;
-		}
+        // useName → type 매핑 (미니멀)
+        // 1) useName이 이미 4타입이면 그대로
+        // 2) 아니면 USE_TYPE_MAP에서 최소 동의어만 매핑
+        // 3) 그래도 없으면 부분일치 한 번만 시도
+        function mapUseNameToType(useName) {
+            if (isCoreType(useName)) return String(useName).trim().toLowerCase();
+            const key = norm(useName);
+            if (!key) return null;
+            if (USE_TYPE_MAP[key]) return USE_TYPE_MAP[key];
+            for (const k in USE_TYPE_MAP) {
+                if (key.includes(k)) return USE_TYPE_MAP[k];
+            }
+            return null;
+        }
 
-		// dae.json 1회 로드
-		async function loadDaeConfig() {
-			if (__daeConfigCache) return __daeConfigCache;
-			const res = await fetch(DAE_CONFIG_URL, { cache: 'no-cache' });
-			if (!res.ok) throw new Error('[providers] dae.json load fail: ' + res.status);
-			const json = await res.json();
-			__daeConfigCache = json;
-			try { console.log('[providers] dae.json loaded:', json?.version || '(no-version)', 'mode=', json?.euiRules?.mode); } catch {}
-			return json;
-		}
+        // 건물명/주소 기반 보조 휴리스틱(가볍게)
+        // useName이 비었거나 애매할 때만 사용
+        function mapFromTextHeuristics(txt) {
+            const t = norm(txt);
+            if (!t) return null;
 
-		// 타입별 base 추출
-		function getBaseAssumptions(daeConfig, type) {
-			return daeConfig?.types?.[type]?.base || null;
-		}
+            // school
+            if (/(초등|중학|고등|학교|대학|캠퍼스)/.test(t)) return 'school';
+            // hospital
+            if (/(병원|의료|의원)/.test(t)) return 'hospital';
+            // factory
+            if (/(공장|제조|산업)/.test(t)) return 'factory';
+            // office
+            if (/(오피스|사무|업무)/.test(t)) return 'office';
 
-        // [추가]
-        // euiRules 추출: dae.json의 등급/EUI/PEF 규칙 블록을 그대로 반환
-        function getEuiRules(daeConfig) {
-            return daeConfig?.euiRules || null;
+            return null;
+        }
+
+        // 최종 타입 선택
+        function pickTypeFromContext(ctx) {
+            // ① useName이 표준 4타입이면 그대로
+            if (isCoreType(ctx?.useName)) {
+                return String(ctx.useName).trim().toLowerCase();
+            }
+            // ② 최소 동의어 매핑
+            const byUse = mapUseNameToType(ctx?.useName);
+            if (byUse) return byUse;
+            // ③ 건물명/주소로 가벼운 보조 추론
+            const txt = ctx?.buildingName || ctx?.roadAddr || ctx?.jibunAddr || '';
+            const byText = mapFromTextHeuristics(txt);
+            if (byText) return byText;
+            // ④ 없으면 null (콘솔에서 unmapped 확인용 로그만 남기고 끝)
+            try {
+                SaveGreen.log.kv('provider', 'type mapping miss', {
+                    useName: ctx?.useName ?? '',
+                    buildingName: ctx?.buildingName ?? '',
+                    roadAddr: ctx?.roadAddr ?? '',
+                    jibunAddr: ctx?.jibunAddr ?? ''
+                }, ['useName','buildingName','roadAddr','jibunAddr']);
+            } catch {}
+            return null;
         }
 
 
-		// 공개
-		window.SaveGreen.Forecast.mapUseNameToType = mapUseNameToType;
+		async function loadDaeConfig() {
+			if (__daeConfigCache) return __daeConfigCache;
+			const rsp = await fetch(DAE_CONFIG_URL, { cache: 'no-store', headers: { 'Accept': 'application/json' } });
+			if (!rsp.ok) throw new Error('dae.json HTTP ' + rsp.status);
+			__daeConfigCache = await rsp.json();
+			return __daeConfigCache;
+		}
+
+		function getBaseAssumptions(dae, type) {
+			if (!dae || !type) return null;
+			const t = String(type).toLowerCase();
+			return dae?.base?.[t] || null;
+		}
+
+        /**
+         * EUI/등급 규칙 가져오기
+         * - dae.json에서 'euiRules'가 표준 키이고,
+         *   혹시 구버전(또는 다른 환경)에서 'rules'를 썼다면 폴백으로 지원한다.
+         * - 반환 스키마 예:
+         *   {
+         *     mode: "electricity" | "primary",
+         *     electricityGradeThresholds?: { "1":120, "2":160, "3":200 },
+         *     pef?: { electricity: 2.7 },
+         *     primaryGradeBands?: [{ min, max, grade, label }]
+         *   }
+         */
+       // [교체] 규칙 로더: 'euiRules' 우선, 없으면 'rules'
+       function getEuiRules(dae) {
+       	if (!dae || typeof dae !== 'object') return null;
+       	return dae.euiRules || dae.rules || null;
+       }
+
+       // [추가] 타입별 규칙 우선 적용(rulesByType[type] → euiRules → rules)
+       function getEuiRulesForType(dae, type) {
+       	if (!dae || typeof dae !== 'object') return null;
+       	const byType = dae.rulesByType && type ? dae.rulesByType[String(type).toLowerCase()] : null;
+       	return byType || getEuiRules(dae);
+       }
+
+
+		function getDefaults(dae) {
+			return dae?.defaults || null;
+		}
+
+		// 외부 노출
 		window.SaveGreen.Forecast.loadDaeConfig = loadDaeConfig;
 		window.SaveGreen.Forecast.getBaseAssumptions = getBaseAssumptions;
-        // [추가]
-        window.SaveGreen.Forecast.getEuiRules = getEuiRules;
-
+		// [추가]
+		window.SaveGreen.Forecast.getEuiRules = getEuiRules;
+		// [추가]
+		window.SaveGreen.Forecast.getDefaults = getDefaults;
+		// [추가] 외부 노출
+        window.SaveGreen.Forecast.getEuiRulesForType = getEuiRulesForType;
 
 		// (선택) 외부에서 타입 추론이 필요할 때 노출
 		window.SaveGreen.Forecast.providers.pickTypeFromContext = pickTypeFromContext;
+
+		// (추가) enrichContext 도 외부 노출
+        window.SaveGreen.Forecast.providers.enrichContext = enrichContext;
 	})();
 
 	/* ---------- 소스 우선순위 결정 ---------- */
@@ -291,29 +352,42 @@
 	 * getBuildingContext()
 	 * - 우선순위대로 소스를 조회하여 최초 유효 컨텍스트를 normalize() 후 반환.
 	 * - 어떤 소스에서도 얻지 못하면 예외를 던진다(상위에서 더미/폴백 처리).
+	 * - ✨ 추가: '세션/로컬/URL 실패 → 프록시(VWorld) 성공' 시, 폴백 경로 사용을 명시 로그로 남긴다.
 	 */
 	async function getBuildingContext() {
 		const order = pickStrategy();
-		console.info('[provider] order =', order.join(' → '));
+		SaveGreen.log.info('provider', `order = ${order.join(' → ')}`);
+		const __tried = []; // [추가] 소스별 시도 기록 (성공/실패/무효)
 
 		for (const s of order) {
 			try {
 				const v = await trySource(s);
 				if (isValid(v)) {
 					const ctx = normalize(v);
-					console.info(`[provider] hit = ${s}`, ctx);
+					// [추가] 시도 기록: 성공
+					__tried.push({ source: s, ok: true });
+					SaveGreen.log.info('provider', `hit = ${s}`);
+					SaveGreen.log.ctx('provider.ctx', ctx);
+					// [추가] 폴백 히트: vworld가 성공하면 이전 소스가 비어/무효/실패였음을 명시
+					if (s === 'vworld') {
+						const prev = __tried.filter(t => t.source !== 'vworld').map(t => t.source).join(', ');
+						SaveGreen.log.info('provider', `fallback via proxy (VWorld). previous sources empty/invalid : ${prev || 'n/a'}`);
+					}
 					return ctx;
 				}
-				console.debug(`[provider] ${s} → empty or invalid`, v);
+				// [추가] 시도 기록: 비어있거나 무효
+				__tried.push({ source: s, ok: false });
+				SaveGreen.log.debug('provider', `${s} → empty/invalid`);
 			} catch (e) {
-				console.warn(`[provider] ${s} failed:`, e);
+				// [추가] 시도 기록: 실패(err)
+				__tried.push({ source: s, ok: false, err: true });
+				SaveGreen.log.warn('provider', `${s} failed`, e);
 			}
 		}
 		throw new Error('No context source available (page/local/url/vworld)');
 	}
 
-	/* ------------------------ Sources ------------------------ */
-
+	/* ---------- readFromPage (서버 템플릿 data-*) ---------- */
 	/**
 	 * readFromPage()
 	 * - 서버 템플릿이 심어둔 #forecast-root 의 data-* 를 읽어 컨텍스트 구성.
@@ -333,22 +407,16 @@
 			from:       sv(root.dataset.from) || String(NOW_YEAR),
 			to:         sv(root.dataset.to)   || String(NOW_YEAR + HORIZON_YEARS),
 			lat:        nv(root.dataset.lat),
-			lon:        nv(root.dataset.lon)
+			lon:        nv(root.dataset.lon),
+			buildingName: sv(root.dataset.buildingName) || sv(root.dataset.bname),
+			roadAddr:     sv(root.dataset.roadAddr),
+			jibunAddr:    sv(root.dataset.jibunAddr)
 		};
+
 		return hasAny(o) ? o : null;
 	}
 
-	/**
-	 * parseIdFromForecastPath()
-	 * - /forecast/{id} 형태의 URL에서 {id}를 추출하여 buildingId 후보로 사용.
-	 */
-	function parseIdFromForecastPath() {
-		try {
-			const m = String(location.pathname).match(/^\/forecast\/(\d+)(?:\/)?$/);
-			return m ? Number(m[1]) : undefined;
-		} catch { return undefined; }
-	}
-
+	/* ---------- readFromLocal (forecast.ctx + 세션 병합) ---------- */
 	/**
 	 * readFromLocal()
 	 * - 저장 스냅샷(JSON) + GreenFinder 세션 스니핑을 병합.
@@ -382,40 +450,48 @@
 			if (o && Number(o.builtYear) === 0) delete o.builtYear;
 			return hasAny(o) ? o : null;
 		} catch (e) {
-			console.warn('[provider] forecast.ctx JSON parse error:', e);
+			SaveGreen.log.warn('provider', 'forecast.ctx JSON parse error', e);
 			return null;
 		}
 	}
 
+	/* ---------- readFromUrl (qs) ---------- */
 	/**
 	 * readFromUrl()
-	 * - 쿼리스트링 기반 컨텍스트(예: /forecast?builtYear=1999&...).
-	 * - from/to 비어 있으면 기본값 보강.
+	 * - 주소창 query string 을 파싱하여 컨텍스트 구성.
+	 * - pnu/builtYear/useName/floorArea/좌표/기간 등을 지원.
 	 */
 	function readFromUrl() {
 		try {
-			const q = new URLSearchParams(location.search);
+			const urlp = new URLSearchParams(location.search);
 			const o = {
-				buildingId: nvPos(q.get('bid')) ?? nvPos(q.get('id')),
-				builtYear:  nvPos(q.get('builtYear')),	// 양수만
-				useName:    sv(q.get('useName') || q.get('use')),
-				floorArea:  nv(q.get('floorArea')),
-				area:       nv(q.get('area')),
-				pnu:        sv(q.get('pnu')),
-				from:       sv(q.get('from')) || String(NOW_YEAR),
-				to:         sv(q.get('to'))   || String(NOW_YEAR + HORIZON_YEARS),
-				lat:        nv(q.get('lat')),
-				lon:        nv(q.get('lon'))
+				pnu:        sv(urlp.get('pnu')),
+				builtYear:  nvPos(urlp.get('builtYear')),
+				useName:    sv(urlp.get('useName') || urlp.get('use')),
+				floorArea:  nv(urlp.get('floorArea') || urlp.get('area')),
+				area:       nv(urlp.get('area')),
+				from:       sv(urlp.get('from')) || String(NOW_YEAR),
+				to:         sv(urlp.get('to'))   || String(NOW_YEAR + HORIZON_YEARS),
+				lat:        nv(urlp.get('lat')),
+				lon:        nv(urlp.get('lon') || urlp.get('lng')),
+				buildingName: sv(urlp.get('buildingName') || urlp.get('bname')),
+				roadAddr:     sv(urlp.get('roadAddr') || urlp.get('roadAddress')),
+				jibunAddr:    sv(urlp.get('jibunAddr') || urlp.get('parcelAddress'))
 			};
 			return hasAny(o) ? o : null;
-		} catch { return null; }
+		} catch (e) {
+			SaveGreen.log.warn('provider', 'readFromUrl failed', e);
+			return null;
+		}
 	}
 
+	/* ---------- vworld 프록시 ---------- */
 	/**
 	 * fetchFromVWorldProxy()
-	 * - seed(페이지/로컬/URL 중 하나) 가 있을 때, /api/ext/vworld/* 프록시로
-	 *   역지오코딩/필지 조회를 수행하여 컨텍스트 보강.
-	 * - seed 필요조건: pnu 또는 (lat, lon) 중 하나.
+	 * - 프록시를 통해 VWorld를 호출하여 컨텍스트를 구성.
+	 * - seed: (pnu) 또는 (lat, lon) 중 하나 이상 필요. 없으면 null.
+	 * - 성공하면 seed + 응답을 합쳐 반환.
+	 * - ✨ 성공/실패 요약 로그를 남긴다(호출 URL/씨드/채워진 필드 요약).
 	 */
 	async function fetchFromVWorldProxy() {
 		const seed = readFromPage() || readFromLocalStorage() || readFromUrl();
@@ -430,16 +506,30 @@
 		else if (lat != null && lon != null) url = `/api/ext/vworld/revgeo?lat=${lat}&lon=${lon}`;
 		else return null;
 
-		console.debug('[provider] vworld GET', url);
+		SaveGreen.log.debug('provider', `vworld GET ${url}`);
 		const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-		if (!res.ok) throw new Error(`VWorld ${res.status}`);
+		if (!res.ok) {
+			SaveGreen.log.warn('provider', `proxy(vworld) HTTP ${res.status} — seed:`, { pnu: !!pnu, lat: !!lat, lon: !!lon });
+			throw new Error(`VWorld ${res.status}`);
+		}
 
 		const v = await res.json();
-		return { ...seed, ...v };
+		const out = { ...seed, ...v };
+		// ✨ 성공 요약: 어떤 씨드를 사용했는지와 핵심 채워진 값(도로명/지번/건물명 등) 여부
+		try {
+			SaveGreen.log.info('provider', 'proxy(vworld) success', {
+				seed: { pnu: !!pnu, lat: !!lat, lon: !!lon },
+				filled: {
+					buildingName: !!(out.buldNm || out.buildingName),
+					roadAddr: !!(out.roadAddr || out.roadAddress),
+					jibunAddr: !!(out.jibunAddr || out.parcelAddress)
+				}
+			});
+		} catch {}
+		return out;
 	}
 
-	/* ------------------------ Helpers ------------------------ */
-
+	/* ---------- 정합성 검사/정규화 ---------- */
 	/**
 	 * isValid(v)
 	 * - 최소 요건:
@@ -453,7 +543,7 @@
 			(nvPos(v.builtYear) !== undefined) ||
 			(nvPos(v.buildingId) !== undefined) ||
 			nonEmpty(v.pnu) ||
-			isFiniteNum(v.lat) || isFiniteNum(v.lon);
+			(isFiniteNum(v.lat) && isFiniteNum(v.lon));
 		return !!(hasFT && hasKey);
 	}
 
@@ -489,29 +579,41 @@
 		return Number.isFinite(n) ? n : undefined;
 	}
 
-	// 양수 숫자만 허용 (0/음수/NaN → undefined)
+	// 양수 정수만(0, 음수, NaN → undefined)
 	function nvPos(x) {
 		const n = nv(x);
-		return (Number.isFinite(n) && n > 0) ? n : undefined;
+		if (!Number.isFinite(n)) return undefined;
+		if (n <= 0) return undefined;
+		return Math.round(n);
 	}
 
 	// 문자열 정규화(공백/빈문자/null → undefined)
 	function sv(x) {
 		if (x == null) return undefined;
 		const s = String(x).trim();
-		return s ? s : undefined;
+		return s === '' ? undefined : s;
 	}
 
-	// 문자열 존재/비공백 여부
-	function nonEmpty(x) { return x != null && String(x).trim() !== ''; }
+	function nonEmpty(x) {
+		return x != null && String(x).trim() !== '';
+	}
 
-	// 유한 숫자 여부(문자 입력도 숫자로 변환 가능하면 true)
-	function isFiniteNum(x) { const n = Number(x); return Number.isFinite(n); }
+	function hasAny(o) {
+		return !!o && Object.values(o).some(v => v != null && String(v).trim() !== '');
+	}
 
-	// 객체에 의미있는 값이 하나라도 있는지
-	function hasAny(o) { return !!(o && Object.values(o).some(v => v != null && String(v) !== '')); }
+	function isFiniteNum(x) {
+		return Number.isFinite(Number(x));
+	}
 
-	/* ------------------------ 전역 노출 ------------------------ */
+	function parseIdFromForecastPath() {
+		try {
+			const m = String(location.pathname || '').match(/\/forecast\/(\d+)/);
+			return m ? Number(m[1]) : undefined;
+		} catch { return undefined; }
+	}
+
+	/* ---------- 외부 노출 ---------- */
 	/**
 	 * - global.getBuildingContext: 간편 호출용(레거시/테스트)
 	 * - window.SG.providers.getBuildingContext: 앱 내부 표준 접근 경로

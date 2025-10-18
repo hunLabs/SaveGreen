@@ -654,10 +654,14 @@ main.wrap {
 	background: #fff;
 }
 .preload-card h4 { margin: 0 0 8px; font-size: 1rem; }
+
 .preload-card .kv {
 	list-style: none;
-	margin: 0; padding: 0;
-	display: grid; gap: 6px;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 6px;
+
 }
 .preload-card .kv .k {
 	opacity: .7; margin-right: 8px;
@@ -666,7 +670,7 @@ main.wrap {
 }
 .preload-card .kv .v {
 	font-weight: 600;
-	font-size: .9375rem;   /* rem 오타 수정 */
+	font-size: .9375rem;
 	line-height: 1.45;
 }
 .preload-card .sub { margin: .5rem 0 0; font-size: .875rem; opacity: .72; }
@@ -785,15 +789,6 @@ body.is-complete .progress-bar { opacity: 1; }
 	overflow: hidden;
 }
 
-/* 예측 가정 카드 본문(전력단가/상승률/할인율 등) 폰트 톤 맞추기 */
-#preload-assumption .mono,
-#preload-assumption p {
-	font-family: inherit;           /* 모노스페이스 느낌 제거 → 카드 본문과 톤 통일 */
-	font-size: .9375rem;            /* 15px */
-	line-height: 1.45;
-	font-weight: 400;               /* 값 강조 */
-	font-variant-numeric: tabular-nums; /* 숫자 폭 고정 */
-}
 
 /* 예측 가정 줄의 라벨/값 톤 통일 */
 #preload-assumption .assump-line .k { opacity: .65; }
@@ -806,6 +801,60 @@ body.is-complete .progress-bar { opacity: 1; }
 	line-height: 1.45;
 	font-variant-numeric: tabular-nums;
 }
+
+/* 좌/우 카드 공통: 세로 플렉스 + 최소 높이 통일 */
+#preload-building,
+#preload-assumption {
+	display: flex;
+	flex-direction: column;
+	min-height: 200px; /* 두 카드 하단 라인이 맞도록 동일값 */
+}
+
+/* 하단 영역: '설명문(.sub) → 롤링바(스켈레톤/슬라이더)' 순서로
+   설명문 아래 간격 8px, 롤링바는 바로 이어서 붙음 (좌우 동일) */
+#preload-building .sub,
+#preload-assumption #assumption-footer .sub {
+	margin-top: auto;     /* 남는 공간을 위로 밀어 올림 = 하단 고정 */
+	margin-bottom: 8px;   /* 설명문과 바 사이 간격 */
+	font-size: .875rem;   /* 좌우 설명문 글자 크기 동일(14px) */
+}
+
+/* 롤링바(스켈레톤) 규격 통일: 높이/여백 동일, 흐름 안 배치 */
+#preload-building .skeleton.s-line,
+#preload-assumption #assumption-footer .skeleton.s-line {
+	position: static !important;
+	inset: auto !important;
+	display: block;
+	height: 8px;
+	margin: 0;            /* 설명문 margin-bottom으로 간격을 통일 */
+	overflow: hidden;
+}
+
+/* 우측 카드 본문(값) 15px, 설명문은 공통 14px 유지 — 폰트 불일치 방지 */
+#preload-assumption .mono,
+#preload-assumption p:not(.sub) {
+	font-family: inherit;
+	font-size: .9375rem;           /* 15px */
+	line-height: 1.45;
+	font-weight: 400;
+	font-variant-numeric: tabular-nums;
+}
+
+/* 우측 카드 하단 래퍼: 하단 고정 + 본문과 간격 */
+#preload-assumption #assumption-footer {
+	margin-top: auto;   /* 카드 하단으로 붙임 */
+	padding-top: 8px;   /* 본문과 간격 */
+}
+
+/* (선택) 기간/슬라이더 여백 규격화 — 좌우 시각 균형 */
+#assumption-period { margin: 0 0 6px; }
+#assumption-slider { margin: 0 0 8px; width: 100%; max-width: 420px; }
+
+
+/* 기간/슬라이더 기본 여백(선택) */
+#assumption-period { margin: 0 0 6px; }
+#assumption-slider { margin: 6px 0 8px; }
+
 
 /* JS 동작 시 스페이서는 완전히 제거(중복 여백 차단) */
 .js .header-spacer {

@@ -121,7 +121,7 @@
             		const nudge = -2;
             		badge.style.top = (topPx + nudge) + 'px';
             	} catch(e) {
-            		console.warn('[stageBadge] syncTopWithLeftBadge skipped:', e);
+            		SaveGreen.log.debug('chart', 'stageBadge sync skipped', e);
             	}
             })();
 
@@ -299,13 +299,15 @@
 	async function renderModelAChart(opts) {
 		__clearStageTimers();
 
+        SaveGreen.log.info('chart', 'stage = A');
+
 		// ⬇️ 기존처럼 years, yhat 사용하되 “중복 선언” 없이 안전 분해
 		const { years, yhat } = opts || {};
 		const cr = (opts && opts.costRange) ? opts.costRange : null; // 비용축 범위(없으면 기본값)
 
-		if (typeof Chart === 'undefined') { console.warn('Chart.js not loaded'); return; }
+		if (typeof Chart === 'undefined') { SaveGreen.log.warn('chart', 'Chart.js not loaded'); return; }
 		const canvas = document.getElementById('chart-energy-combo');
-		if (!canvas) { console.warn('#chart-energy-combo not found'); return; }
+		if (!canvas) { SaveGreen.log.warn('chart', '#chart-energy-combo not found'); return; }
 
 		// 기존 차트 제거 (겹침 방지)
 		if (Chart.getChart) {
@@ -448,12 +450,14 @@
 	async function renderModelBChart(opts) {
 		__clearStageTimers();
 
+		SaveGreen.log.info('chart', 'stage = B');
+
 		const { years, yhat } = opts || {};
 		const cr = (opts && opts.costRange) ? opts.costRange : null;
 
-		if (typeof Chart === 'undefined') { console.warn('Chart.js not loaded'); return; }
+		if (typeof Chart === 'undefined') { SaveGreen.log.warn('chart', 'Chart.js not loaded'); return; }
 		const canvas = document.getElementById('chart-energy-combo');
-		if (!canvas) { console.warn('#chart-energy-combo not found'); return; }
+		if (!canvas) { SaveGreen.log.warn('chart', '#chart-energy-combo not found'); return; }
 
 		// 기존 차트 제거
 		if (Chart.getChart) {
@@ -588,9 +592,11 @@
 	async function renderEnergyComboChart(opts) {
 		__clearStageTimers();
 
-		if (typeof Chart === 'undefined') { console.warn('Chart.js not loaded'); return; }
+		SaveGreen.log.info('chart', 'stage = C');
+
+		if (typeof Chart === 'undefined') { SaveGreen.log.warn('chart', 'Chart.js not loaded'); return; }
 		const canvas = document.getElementById('chart-energy-combo');
-		if (!canvas) { console.warn('#chart-energy-combo not found'); return; }
+		if (!canvas) { SaveGreen.log.warn('chart', '#chart-energy-combo not found'); return; }
 
 		// [NEW] 옵션 안전 분해
 		const years  = (opts?.years || []).map(String);
