@@ -1,0 +1,276 @@
+/* ========== 기본 헤더 구조 ========== */
+.header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  font-family: "Noto Sans KR", sans-serif;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+/* 로고 영역 */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.symbol_img {
+  height: 38px;
+  margin-right: 8px;
+  transition: opacity 0.3s ease;
+}
+
+.logo_img {
+  height: 34px;
+  transition: opacity 0.3s ease;
+}
+
+/* ============================= */
+/* 아랫줄 메뉴 */
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.navbar.nav-up {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+.nav-links {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  gap: 80px;
+  margin: 0;
+  padding: 10px 0;
+}
+
+.nav-links li {
+  position: relative;
+}
+
+.nav-links a {
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+  text-decoration: none;
+  padding: 10px 0;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.nav-links li:hover a {
+  color: #28d199;
+}
+
+/* hover 시 배경 효과 */
+.nav-links li:hover::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -15px;
+  width: 100%;
+  height: 65px;
+  background: linear-gradient(to bottom, rgba(23, 51, 29, 0.2), transparent);
+  border-radius: 8px;
+  z-index: -1;
+}
+
+/* ============================= */
+/* 드롭다운 패널 */
+.dropdown-panel {
+  display: flex;
+  justify-content: center;
+  gap: 120px;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 30px 0 40px 0;
+  animation: fadeDown 0.3s ease;
+  width: fit-content;
+  border-radius: 0 0 10px 10px;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.nav-links li:hover .dropdown-panel {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 드롭다운 내부 */
+.dropdown-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.dropdown-panel ul li {
+  margin: 5px 0;
+}
+
+.dropdown-panel ul li a {
+  color: #333;
+  text-decoration: none;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+
+.menu-toggle {
+    display: none;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    padding-right: 9%;
+   
+}
+
+.navbar:hover .dropdown-text {
+    display: block;
+    
+  }
+
+/* ============================= */
+/* hover 시 로고 전환 (데스크탑만) */
+@media (min-width: 769px) {
+  .header:hover .symbol_img {
+    content: url("/img/symbol_C.png");
+  }
+
+  .header:hover .logo_img {
+    content: url("/img/saveGreen_Blogo_02.png");
+  }
+
+  .header:hover .logo {
+    background-color: #ffffff;
+  }
+
+  .header:hover .navbar {
+    background-color: #ffffff;
+  }
+
+  .header:hover .nav-links a {
+    color: #000000;
+  }
+
+  .header:hover .navbar{
+    padding-bottom: 12%;
+  }
+  
+  
+}
+
+/* ============================= */
+/* 반응형 디자인 */
+
+/* 태블릿 이하 (1024px 이하) */
+@media (max-width: 1024px) {
+  .nav-links {
+    gap: 40px;
+  }
+
+  .nav-links a {
+    font-size: 16px;
+  }
+
+  .dropdown-panel {
+    gap: 60px;
+    padding: 20px 0 25px 0;
+  }
+}
+
+/* 모바일 (768px 이하) */
+@media (max-width: 768px) {
+  .header {
+    background-color: #ffffff;
+  }
+
+  .logo {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* 햄버거 버튼 */
+  .menu-toggle {
+    display: block;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    padding-right: 9%;
+    stroke: white;
+    transition: stroke 0.3s ease;
+  }
+
+  .menu-toggle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .navbar {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background-color: #ffffff;
+  }
+
+  .navbar.active {
+    display: flex;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px 0;
+    justify-content: center;
+  }
+
+  .nav-links a {
+    color: #000;
+    font-size: 16px;
+  }
+
+  /* 모바일에서는 드롭다운 항상 펼쳐진 형태 */
+  .dropdown-panel {
+    position: static;
+    background: transparent;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    padding: 0;
+    gap: 10px;
+  }
+
+  .dropdown-panel ul li a {
+    color: #333;
+  }
+
+  /* 모바일에서는 hover 로고 전환 제거 */
+  .header:hover .logo_img,
+  .header:hover .symbol_img {
+    content: url("/img/saveGreen_Blogo_02.png");
+  }
+}
+
+/* ============================= */
+/* 애니메이션 */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

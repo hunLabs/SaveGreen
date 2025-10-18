@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Co2Application",
+            "request": "launch",
+            "mainClass": "com.example.co2.Co2Application",
+            "projectName": "co2-SaveGreen_Spring"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Co2Application<SaveGreen_Spring>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.co2.Co2Application",
+            "projectName": "SaveGreen_Spring",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

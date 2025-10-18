@@ -1,0 +1,59 @@
+<!--
+    * @Author : 연은주
+    * @Date : 2025-09-29
+    * @Description : header.html (헤더)
+    * @History :
+        - 헤더 구현 시작
+        - 드롭다운 메뉴 구현 완료
+        - index.html 연결 작업 완료
+        - footer 연결 작업 완료
+    * 2025-09-29 : 초기작성
+-->
+<div th:fragment="header">
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <header id="menubar" class="header">
+    <div class="logo">
+      <div class="logo_toggle">
+        <img class="symbol_img img_center" src="/img/symbol_W.png">
+        <img class="logo_img img_center" src="/img/saveGreen_Wlogo_02.png">  
+      </div>
+      <div class="menu-toggle"><img src="/img/menu.svg" style="color: aliceblue;"></div>
+    </div>
+    
+
+    
+    <nav class="navbar">
+      <ul class="nav-links">
+        <li>
+          <a href="#">GREEN FINDER</a>
+          <div class="dropdown-panel">
+            <ul>
+              <li><a class="dropdown-text" href="/GreenFinder/text">녹색 건축물 / ZEB</a></li>
+              <li><a class="dropdown-text" href="/GreenFinder">건물 정보 검색</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li>
+          <a href="#">GREEN REMODELING</a>
+          <div class="dropdown-panel">
+            <ul>
+              <li><a class="dropdown-text" href="/forecast">그린 리모델링</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li>
+          <a href="#">ENERGY SIMULATOR</a>
+          <div class="dropdown-panel">
+            <ul>
+              <li><a class="dropdown-text" href="/simulator">시뮬레이터</a></li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </nav>
+    <hr class="lineHR" style="color: aliceblue; margin: 0; padding: 0;">
+  </header>
+  <script th:src="@{/js/header.js}"></script>
+</div>

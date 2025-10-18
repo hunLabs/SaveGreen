@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <title>SAVE GREEN</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f4f8f4;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    /* 상단 네비게이션 */
+    nav {
+      background: #0b3d0b;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* 메인 컨테이너 */
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 15px;
+      padding-top: 17vh;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #cfd8cf;
+    }
+
+    .section h2 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: #0b3d0b;
+    }
+
+    .flex-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .flex-item {
+      flex: 1 1 300px;
+      background: #f0f5f0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .highlight {
+      color: #0b3d0b;
+      font-weight: bold;
+    }
+
+    /* 버튼 */
+    .btn {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      margin: 30px auto 0;
+      padding: 15px;
+      text-align: center;
+      background: #0b3d0b;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    
+    .btn:hover {
+      background: #145c14;
+    }
+
+    li {
+       list-style: none;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      nav {
+        gap: 15px;
+        font-size: 0.9rem;
+      }
+      .section {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div th:replace="layouts/header :: header"></div>
+    <!-- <nav>  
+    <a href="#">SERVICE</a>
+    </nav> -->
+
+    <!-- 메인 -->
+    <div class="container">
+
+    <div class="section">
+        <h2>그린리모델링</h2>
+        <p>
+        “<span class="highlight">그린리모델링으로 절세와 친환경을 한 번에 잡으세요.</span>”<br>
+        “<span class="highlight">G-SEED와 ZEB 인증</span>, 월세의 시작은 내 건물 관리에서부터!”
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>친환경 건축의 두 축</h2>
+        <div class="flex-box">
+        <div class="flex-item">
+            <h3>G-SEED와 ZEB</h3>
+            <p>녹색건축(G-seed)과 ZEB(Zero Energy Building)...</p>
+            <p><span class="highlight">G-SEED :</span> 자원 절약, 환경오염 저감...</p>
+            <p><span class="highlight">ZEB :</span> 에너지 사용을 최소화...</p>
+        </div>
+        <div class="flex-item">
+            <p>✔ 녹색건축물의 친환경 건축물 혜택 포함<br>
+                ✔ ZEB는 탄소중립형 건축 구역과 직접적 관계</p>
+        </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>절세 혜택</h2>
+        <div class="flex-box">
+        <div class="flex-item">
+            <h3>ZEB (제로에너지건축물)</h3>
+            <ul class="">
+            <li>✔ 취득세 15% 감면</li>
+            <li>✔ 재산세 최대 20% 감면</li>
+            <li>✔ 법인세/소득세 세액 공제</li>
+            <li>✔ 설계비 지원</li>
+            </ul>
+        </div>
+        <div class="flex-item">
+            <h3>녹색건축물</h3>
+            <ul>
+            <li>✔ 취득세 최대 15% 감면</li>
+            <li>✔ 재산세 최대 10% 감면</li>
+            <li>✔ 법인세 세액 공제</li>
+            </ul>
+        </div>
+        </div>
+    </div>
+
+    <a href="/GreenFinder " class="btn">건물 정보 검색 페이지로 이동</a>
+
+    </div>
+</body>
+</html>

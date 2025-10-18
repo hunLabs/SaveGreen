@@ -1,0 +1,85 @@
+<!-- 
+* @Author : 연은주
+* @Date : 2025-09-30
+* @Description : serviceMap.html (서비스 맵 페이지)
+* @History :
+    - 서비스 맵 페이지 구현 시작
+    - vworld api 적용 및 지도 표시 완료
+    - 검색 기능 구현 완료
+    - 팝업창 구현 완료
+    - 반응형 웹 구현 완료
+* 2025-09-30 : 초기작성 
+-->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAVE GREEN</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/greenFinderMap.css}">
+  <script type="text/javascript" src="https://cesium.com/downloads/cesiumjs/releases/1.82/Build/Cesium/Cesium.js"></script>
+  <script type="text/javascript" src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=AED66EDE-3B3C-3034-AE11-9DBA47236C69"></script>
+</head>
+<body>
+
+    <!-- 헤더 -->
+    <div th:replace="layouts/header :: header"></div>
+    <!-- 메인 -->
+    <input type="hidden" id="lon" name="lon">
+    <input type="hidden" id="lat" name="lat">
+    <input type="hidden" id="height" name="height">
+    <input type="hidden" id="pnu" name="pnu">
+    <input type="hidden" id="ldCodeNm" name="ldCodeNm">
+    <input type="hidden" id="mnnmSlno" name="mnnmSlno">
+
+    <main class="service-container">
+        <div id="vmap"></div>
+
+        <!-- 검색창 오버레이 -->
+        <div class="search-container">
+            <input type="text" name="search" class="searchBox search-box" placeholder="도로명 주소 검색" >
+            <div class="searchResult"></div>
+        </div>
+
+        <!-- 팝업 (이미지로) -->
+        <div id="intro_popup" class="intro_popup">
+            <img src="/img/popup_guide.png" alt="팝업 가이드" />
+            <button class="close-btn" onclick="closePopup()">X</button>
+        </div>
+    </main>
+  
+    <div id="popup" class="popup">
+        <div class="popup-header">
+            <span>건축물정보</span>
+            <button class="popup-close" onclick="hidePopup()">✕</button>
+        </div>
+        <div class="popup-body">
+            <h3 id="buildingName">-</h3>
+            <div class="addr">
+                <span class="tag">도로명</span> <span id="roadAddr">-</span><br>
+                <span class="tag">지번</span> <span id="jibunAddr">-</span><br>
+                <span class="tag">영문</span> <span id="engAddr">-</span>
+            </div>
+            <table class="info-table">
+                <tr><th>건물명</th><td id="buldNm">-</td><th>건물동명</th><td id="buldDongNm">-</td></tr>
+                <tr><th>법정동명</th><td id="ldCodeNm">-</td><th>지번</th><td id="mnnmSlno">-</td></tr>
+                <tr><th>지상층수</th><td id="groundFloorCo">-</td><th>지하층수</th><td id="undgrndFloorCo">-</td></tr>
+                <tr><th>건축면적</th><td id="buldBildngAr">-</td><th>대지면적</th><td id="buldPlotAr">-</td></tr>
+                <tr><th>건물높이</th><td id="buldHg">-</td><th>용도</th><td id="buldPrposClCodeNm">-</td></tr>
+                <tr><th>주용도</th><td id="mainPurpsClCodeNm">-</td><th>건축년도</th><td id="useConfmDe">-</td></tr>
+                <tr><th>세부용도</th><td id="detailPrposCodeNm">-</td><th>허가일자</th><td id="prmisnDe">-</td></tr>
+            </table>
+        </div>
+        <div class="popup-footer">
+            <button class="energy-btn">에너지 사용량 확인하기</button>
+        </div>
+    </div>
+
+
+  <script th:src="@{/js/GreenFinderMap.js}"></script>
+
+
+</body>
+</html>

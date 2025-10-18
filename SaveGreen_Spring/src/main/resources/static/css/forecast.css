@@ -1,0 +1,823 @@
+/* =========================================================================
+	글로벌 변수
+	-------------------------------------------------------------------------
+	- 색상/라운드/헤더 높이/히어로 패딩/비디오 크기 등 공통 토큰
+	======================================================================== */
+:root {
+	--bg-hero: #D0DACF;
+	--wrap-max: 1200px;
+
+	--color-recommend: #133D1E;
+	--color-conditional: #F57C00;
+	--color-not-recommend: #D80004;
+
+	--surface-radius: 14px;
+
+	/* 헤더 실제 높이 + 추가 간격 (히어로 겹침 방지/오프셋용) */
+	--header-height: 50px;
+	--header-extra-gap: 0px;
+
+	/* 히어로 시작 오프셋 */
+	--hero-offset-gap: -100px;
+
+	/* 히어로 내부 패딩 */
+	--hero-pad: 24px;
+	--hero-pad-left-extra: 12px;
+
+	/* 히어로 비디오 컨테이너 크기 */
+	--video-w: 520px;
+	--video-h: 340px;
+
+	/* 비디오 워터마크 회피용 확대/이동 */
+	--video-scale: 1.18;
+	--video-shift-x: -6%;
+	--video-shift-y: -6%;
+}
+
+/* =========================================================================
+	유틸리티
+	======================================================================== */
+.wrap {
+	max-width: var(--wrap-max);
+	margin: 0 auto;
+}
+.hidden {
+	display: none !important;
+}
+.spacer-12 {
+	height: 12px;
+}
+
+/* =========================================================================
+	페이지 헤더 보정 (히어로가 헤더 밑으로 들어가는 현상 방지)
+	======================================================================== */
+.page-forecast {
+	padding-top: calc(var(--header-height) + var(--header-extra-gap));
+	position: relative;
+	z-index: 0;
+}
+.header-spacer {
+	height: calc(var(--header-height) + var(--header-extra-gap));
+}
+.page-forecast :target {
+	scroll-margin-top: calc(var(--header-height) + var(--header-extra-gap) + 16px);
+}
+
+/* =========================================================================
+	HERO 블록
+	- 연두색 배경/라운드/2컬럼 → 1컬럼(모바일)
+	======================================================================== */
+.hero-block {
+	background: var(--bg-hero);
+	border-radius: var(--surface-radius);
+    overflow: visible;        /* ✅ 잘림 방지: 내부 콘텐츠 높이를 그대로 반영 */
+	margin-top: var(--hero-offset-gap);
+	height: auto;             /* ✅ 혹시 상위에서 고정됐을 가능성 방지용(무해) */
+    box-sizing: border-box;
+}
+.hero-block .hero-inner {
+	display: grid;
+	/* 🧩 오른쪽 컬럼은 내용(=비디오 카드) 너비에 맞춰 'auto'로,
+	   왼쪽 텍스트 영역은 남는 공간을 1fr로 채우게 함.
+	   → 비디오 컨테이너가 고정 크기일 때도 그리드가 깨지지 않음 */
+	grid-template-columns: 1fr auto;
+	gap: 28px;
+	padding: var(--hero-pad) var(--hero-pad) var(--hero-pad)
+		calc(var(--hero-pad) + var(--hero-pad-left-extra));
+    align-items: stretch;     /* ✅ 트랙 높이를 콘텐츠에 맞게 쭉 늘림 */
+    grid-auto-rows: minmax(min-content, auto); /* ✅ 행 높이 자동 확장(안전망) */
+}
+.hero-block .hero-text h1 {
+	font-weight: 800 !important;
+	margin: 0 0 .5rem 0;
+	text-align: left !important;
+	text-transform: none !important;
+}
+.hero-block .hero-text h2 {
+	font-weight: 700 !important;
+	margin: 0 0 .75rem 0;
+	text-align: left !important;
+	text-transform: none !important;
+}
+.hero-block .hero-desc {
+	font-weight: 400 !important;
+	margin: 0;
+	text-align: left !important;
+	text-transform: none !important;
+}
+
+/* --- 고정 크기 비디오 컨테이너 (컨테이너 고정, 내부 영상 확대/이동) --- */
+.video-card {
+	position: relative;
+	/* 🧩 데스크톱에선 완전 '고정 크기' */
+	width: var(--video-w);
+	height: var(--video-h);
+	border-radius: 12px;
+	overflow: hidden;
+	margin: 0 0 0 auto;
+}
+
+.video-card .video-media {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	/* ✨ 작은 화면에서 과도한 확대/이동 완화(기본값 유지, 미디어쿼리에서 더 줄임) */
+	transform: translate(-50%, -50%)
+		scale(var(--video-scale))
+		translateX(var(--video-shift-x))
+		translateY(var(--video-shift-y));
+	pointer-events: none;
+}
+
+/* --- HERO 반응형 (한 컬럼 스택) --- */
+@media (max-width: 960px) {
+	.hero-block .hero-inner {
+		grid-template-columns: 1fr;
+		gap: 20px;
+		padding: var(--hero-pad);
+	}
+
+	/* 🧩 모바일: 가로 100% 쓰고, 16:9 비율로 높이 자동 계산 */
+	.video-card {
+		width: 100%;
+		max-width: 100%;
+		height: auto;          /* 고정 높이 해제 */
+		aspect-ratio: 16 / 9;  /* 비율 박스로 전환 */
+		min-height: 220px;     /* 폰트/환경에 따라 너무 낮아지지 않게 바닥선 */
+	}
+
+	/* ✨ 모바일에서 확대/이동 강도 완화 → 잘림 줄이기 */
+	.video-card .video-media {
+		transform: translate(-50%, -50%) scale(1.08) translateX(0%) translateY(-2%);
+	}
+}
+
+/* 더 좁은 화면에서는 살짝 더 줄여서 로고/워터마크 가림과 잘림 간 밸런스 */
+@media (max-width: 600px) {
+	.video-card .video-media {
+		transform: translate(-50%, -50%) scale(1.04) translateX(0%) translateY(-1%);
+	}
+}
+
+
+/* =========================================================================
+	ML Loader (히어로와 동일 라운드/폭)
+	======================================================================== */
+.ml-panel {
+	padding: 0;
+}
+.ml-panel .ml-card {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 16px 0;
+	border-radius: var(--surface-radius);
+}
+.ml-panel .progress {
+	margin-bottom: 12px;   /* 12~16px 선호 */
+}
+
+/* --- 로딩 단계 지도 --- */
+.progress-map {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px 20px;
+	align-items: center;
+}
+.progress-map .step {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	opacity: .85;
+}
+.progress-map .step .check {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	border: 2px solid rgba(255, 255, 255, .35);
+	overflow: hidden;
+}
+.progress-map .step.done .check {
+	background: transparent !important;
+	border-color: var(--ml-accent, #56D6E0);
+}
+.progress-map .step.done .check::after {
+	content: '✓';
+	color: var(--ml-accent, #56D6E0);
+	font-weight: 900;
+	font-size: 12px;
+	line-height: 1;
+}
+
+/* --- 칩(키-밸류 태그) --- */
+.chips {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 10px 12px;
+	align-items: stretch;
+	width: 100%;
+}
+.chip {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+.chip .dot {
+	flex: 0 0 auto;
+}
+.chip strong {
+	white-space: nowrap;
+}
+.chip span:last-of-type {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+@media (max-width: 480px) {
+	.chip {
+		padding: 6px 10px;
+	}
+	.chip,
+	.chip strong,
+	.chip span:last-of-type {
+		font-size: clamp(12px, 3.2vw, 14px);
+		line-height: 1.2;
+	}
+}
+
+/* =========================================================================
+	결과 섹션
+	======================================================================== */
+.result.hidden {
+	display: none;
+}
+
+/* --- 차트 카드 --- */
+.chart-energy-wrap {
+	position: relative;
+	overflow: visible;
+}
+
+/* ✨ 우측 모델 배지 정렬/크기 보강(인라인 누락 대비) */
+.chart-stage-badge {
+	pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 12px;
+    border-radius: 9999px;
+}
+
+.chart-card {
+	background: #fff;
+	border-radius: var(--surface-radius);
+	padding: 20px;
+	margin: 8px 0 16px 0;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+	position: relative;
+	z-index: 0;
+}
+.chart-title {
+	font-weight: 700;
+	margin-bottom: 12px;
+}
+.chart-area {
+	height: clamp(260px, 40vh, 420px);
+}
+.chart-area canvas {
+	width: 100% !important;
+	height: 100% !important;
+	display: block;
+}
+
+/* ✨ [추가] 차트 제목 아래 건물 라벨 */
+.chart-context{
+    margin: 4px 0 6px;
+    font-size: 13px;
+    opacity: .9;
+}
+
+/* ✨ 차트 라벨 배지(제목 아래, 좌측 정렬) : 우측 칩과 톤 통일(딥 그린 + 흰 글자) */
+.chart-badge{
+	/* 크기: 우측 모델 칩과 동일 높이 */
+	--chip-h: 32px;
+	display: inline-flex;
+	align-items: center;
+	height: var(--chip-h);
+	line-height: var(--chip-h);
+	padding: 0 12px;
+	border-radius: 9999px;
+	font-weight: 600;
+	letter-spacing: .2px;
+
+	/* ===== 딥그린 팔레트(추천) ===== */
+	/* 배경은 진하게, 보더는 살짝 더 진하게, 글자는 흰색 */
+	background: #0f6f58;		/* 딥 세이지 그린 */
+	border: 1px solid #0b5a46;	/* 배경보다 1단계 진한 경계 */
+	color: #ffffff;				/* 흰 글자 */
+
+	/* 긴 텍스트 대응 */
+	max-width: 80%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	/* 살짝 그림자 */
+	box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+
+/* ✨ 차트 카드 바닥 여백(축/툴팁과 KPI가 겹치지 않도록) */
+#chartA, #chartB, #chartC,
+.chart-card, .chart-box, .chart-wrap {
+	margin-bottom: 28px !important;	/* 24~32px 범위에서 조정 가능 */
+}
+
+/* ✨ KPI(결과) 섹션 상단 여백 — 차트와 확실히 분리 */
+#kpiSection, .kpi-section, .kpi-wrap, .kpi-area {
+	margin-top: 24px !important;	/* 20~28px 범위에서 조정 가능 */
+}
+
+/* ✨ 차트 영역 바닥 여백(축 라벨/툴팁이 카드 경계에 닿지 않게) */
+.chart-area{
+	padding-bottom: 8px;	/* 8~12px 선호 */
+}
+
+
+
+
+/* --- 연두 배경 면 (카드+요약+배너 감싸는 컨테이너) --- */
+.result-surface {
+	background: var(--bg-hero);
+	padding: 16px 20px 20px 20px;
+	border-radius: var(--surface-radius);
+	position: relative;
+	z-index: 0;
+}
+.section-heading {
+	font-weight: 700;
+	text-align: center;
+	margin: 2px 0 12px 0;
+}
+
+/* --- KPI 카드 --- */
+.kpis {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+	margin: 0 0 16px 0;
+}
+.kpi-card {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	background: #fff;
+	border-radius: var(--surface-radius);
+	padding: 16px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+}
+.kpi-card .meta .label {
+	font-size: 12px;
+	opacity: .7;
+}
+.kpi-card .meta .value {
+	font-size: 20px;
+	font-weight: 700;
+}
+.kpi-card .meta .sub {
+	font-size: 11px;
+	opacity: .6;
+	margin-top: 2px;
+}
+@media (max-width: 960px) {
+	.kpis { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+	.kpis { grid-template-columns: 1fr; }
+}
+
+/* --- 상태별 변수(아이콘 배경 컬러) --- */
+#result-section {
+	--icon-bg: var(--color-recommend);
+}
+#result-section.recommend {
+	--icon-bg: var(--color-recommend);
+}
+#result-section.conditional {
+	--icon-bg: var(--color-conditional);
+}
+#result-section.not-recommend {
+	--icon-bg: var(--color-not-recommend);
+}
+
+/* --- KPI 카드 아이콘 --- */
+.kpi-card .icon-wrap {
+	display: flex;
+	align-items: center;
+}
+.kpi-card .icon-bg {
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: var(--icon-bg);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.kpi-card .icon {
+	width: 22px;
+	height: 22px;
+	background-color: #fff;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+.kpi-card .icon-card1 { -webkit-mask-image: url("/img/card1.svg"); mask-image: url("/img/card1.svg"); }
+.kpi-card .icon-card2 { -webkit-mask-image: url("/img/card2.svg"); mask-image: url("/img/card2.svg"); }
+.kpi-card .icon-card3 { -webkit-mask-image: url("/img/card3.svg"); mask-image: url("/img/card3.svg"); }
+.kpi-card .icon-card4 { -webkit-mask-image: url("/img/card4.svg"); mask-image: url("/img/card4.svg"); }
+
+/* --- 요약 카드 --- */
+.summary.card {
+	background: #fff;
+	border-radius: var(--surface-radius);
+	padding: 18px;
+	margin: 0 0 16px 0;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+}
+.summary-title-row {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+.summary-title {
+	font-size: 25px;
+	font-weight: 800;
+	line-height: 1.2;
+}
+.summary-badge {
+	background: #E9ECEF;
+	color: #222;
+	font-size: 12px;
+	padding: 6px 10px;
+	border-radius: 999px;
+	font-weight: 600;
+}
+.summary-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.summary-list li {
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+	margin: 6px 0;
+}
+.summary-list li::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #2E7D32;
+	margin-top: 6px;
+	flex: none;
+}
+.summary-list strong {
+	font-weight: 700;
+}
+.summary-footnote {
+	margin-top: 8px;
+	font-size: 11px;
+	opacity: .7;
+}
+
+/* =========================================================================
+	배너 & 배지 (공통)
+	- 텍스트는 왼쪽 정렬, 배지는 오른쪽 정렬
+	- 절대배치/우측 패딩 트릭 없이 Flex만으로 정렬(겹침 제거)
+	- 모바일=세로 배지 / 데스크톱·태블릿=가로 배지
+	======================================================================== */
+.banner {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	position: relative;
+	border-radius: var(--surface-radius);
+	padding: 14px 16px;
+	color: #fff;
+	font-size: 30px;
+	font-weight: 700;
+	overflow: hidden;
+}
+.banner.recommend   { background: var(--color-recommend); }
+.banner.conditional { background: var(--color-conditional); }
+.banner.not-recommend { background: var(--color-not-recommend); }
+
+/* 배지(공통) — 기본은 “모바일/세로 캡슐” */
+.banner .badge {
+	margin-left: auto;             /* 우측 끝으로 밀기 */
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	writing-mode: vertical-rl;     /* 세로 쓰기(모바일 기본) */
+	text-orientation: upright;
+	line-height: 1.15;
+	letter-spacing: 2px;
+	border-radius: 999px;
+
+	width: 46px;                   /* 세로 배지 크기 */
+	height: 96px;
+
+	background: rgba(255, 255, 255, .15);
+	color: inherit;
+	font-weight: 700;
+	font-size: 1rem;
+	padding: 8px 10px;
+
+	/* 과거 빗금/마스크 배경 충돌 방지 */
+	background-image: none !important;
+	-webkit-mask-image: none !important;
+	mask-image: none !important;
+
+	pointer-events: none;          /* 클릭 방해 방지 */
+}
+
+/* 데스크톱/태블릿: 배지를 “가로 캡슐”로 자동 전환 */
+@media (min-width: 701px) {
+	.banner .badge {
+		writing-mode: horizontal-tb; /* 가로 쓰기 */
+		text-orientation: mixed;
+		letter-spacing: 1px;
+
+		height: 40px;
+		width: clamp(110px, 12vw, 150px);
+		font-size: 1.125rem;         /* ≈ 18px */
+		padding: 10px 16px;
+	}
+}
+
+/* =========================================================================
+	페이지 레이아웃 보강: 푸터 바닥 고정 + 로더/결과가 빈 공간 채우기
+	======================================================================== */
+main.wrap {
+	display: flex;
+	flex-direction: column;
+	min-height: calc(100svh - var(--header-height, 0px)); /* 헤더 높이 제외하고 꽉 채우기 */
+}
+#mlLoader,
+#result-section {
+	flex: 1 1 auto;
+	min-height: clamp(360px, 60vh, 72vh); /* 화면에 따라 부드럽게 확장 */
+}
+.page-footer { margin-top: auto; }
+
+/* =========================================================================
+	시작 버튼 (페이지 한정)
+	======================================================================== */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .5rem;
+	padding: .75rem 1rem;
+	border-radius: 12px;
+	border: 1px solid transparent;
+	cursor: pointer;
+	font-weight: 600;
+	line-height: 1;
+	text-decoration: none;
+	user-select: none;
+	transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+}
+.btn-primary {
+	color: #fff;
+	background: #2563eb;
+	border-color: #1e4ed8;
+	box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 12px rgba(37,99,235,.18);
+}
+.btn-primary:hover {
+	background: #1e4ed8;
+	box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 6px 18px rgba(37,99,235,.28);
+}
+.btn-primary:active { transform: translateY(1px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* =========================================================================
+	로딩 정보 패널(스켈레톤 포함) — 진행바 바로 아래
+	======================================================================== */
+.preload.panel {
+	margin-top: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.preload-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+}
+.preload-head .status { font-weight: 600; }
+.preload-head small { opacity: .72; }
+
+/* 2열 그리드(반응형) */
+.preload-grid {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 900px) {
+	.preload-grid { grid-template-columns: 1fr; }
+}
+
+.preload-card {
+	position: relative;
+	padding: 12px 14px;
+	border: 1px solid rgba(0,0,0,.08);
+	border-radius: 12px;
+	background: #fff;
+}
+.preload-card h4 { margin: 0 0 8px; font-size: 1rem; }
+.preload-card .kv {
+	list-style: none;
+	margin: 0; padding: 0;
+	display: grid; gap: 6px;
+}
+.preload-card .kv .k {
+	opacity: .7; margin-right: 8px;
+	min-width: 6em; display: inline-block;
+	font-size: .9375rem; line-height: 1.45;
+}
+.preload-card .kv .v {
+	font-weight: 600;
+	font-size: .9375rem;   /* rem 오타 수정 */
+	line-height: 1.45;
+}
+.preload-card .sub { margin: .5rem 0 0; font-size: .875rem; opacity: .72; }
+.preload-card .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* 하단 띠: 리스크 배지 + 벤치마크 */
+.preload-foot {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+.benchmark em { opacity: .72; font-style: normal; }
+
+/* 리스크 배지 */
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge {
+	display: inline-flex; align-items: center; gap: 6px;
+	padding: 6px 10px; border-radius: 999px; font-size: .875rem; line-height: 1;
+	border: 1px solid rgba(0,0,0,.08); background: rgba(0,0,0,.03);
+}
+.badge.warn  { color: #b45309; background: #fff7ed; border-color: #fed7aa; } /* 노후/경고 */
+.badge.info  { color: #1f4b99; background: #eef2ff; border-color: #c7d2fe; } /* 정보 */
+.badge.muted { color: #334155; background: #f1f5f9; border-color: #e2e8f0; } /* 기본 */
+
+/* 얇은 스켈레톤(자리 고정용) */
+.skeleton {
+	position: absolute;
+	inset: auto 12px 12px 12px;
+	height: 8px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+.skeleton::before {
+	content: "";
+	display: block;
+	height: 100%;
+	background: linear-gradient(90deg, #f3f4f6 0%, #eef1f5 50%, #f3f4f6 100%);
+	animation: sheen 1.2s linear infinite;
+}
+.skeleton.s-line { opacity: .6; }
+@keyframes sheen {
+	0% { transform: translateX(-100%); }
+	100% { transform: translateX(100%); }
+}
+
+/* 상태에 따른 진행바 명도(느낌만) — 로더 스킨은 ml-loader.css 그대로 유지 */
+body.is-idle    .progress-bar { opacity: .45; }
+body.is-running .progress-bar { opacity: 1; }
+body.is-complete .progress-bar { opacity: 1; }
+
+/* =========================================================================
+	로더 헤더: 기존 .ml-card > .row 구조에 맞춘 정렬/액션 영역
+	======================================================================== */
+.ml-panel .ml-card > .row {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 12px;
+}
+.ml-panel .ml-card > .row .head-left { min-width: 0; }
+.ml-panel .ml-card > .row .actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+.ml-panel .ml-card > .row .actions .muted { opacity: .7; }
+
+/* 작은 버튼 사이즈 (공통 .btn 기반) */
+.btn-sm { padding: .5rem .75rem; border-radius: 10px; font-size: .9375rem; }
+
+/* =========================================================================
+	로딩 정보패널 '인버티드' 스타일 (로더의 다크톤에 맞춰 가독성 ↑)
+	- HTML에서 preload-card 에 inverted 클래스를 추가해 사용
+	======================================================================== */
+.preload-head { color: rgba(255,255,255,.92); }
+.preload-head small { color: rgba(255,255,255,.72); }
+
+.preload-card.inverted {
+	background: rgba(255,255,255,.06);
+	border-color: rgba(255,255,255,.18);
+	color: rgba(255,255,255,.92);
+}
+.preload-card.inverted h4 { color: rgba(255,255,255,.98); }
+.preload-card.inverted .kv .k { color: rgba(255,255,255,.70); }
+.preload-card.inverted .kv .v { color: rgba(255,255,255,.98); }
+.preload-card.inverted .sub   { color: rgba(255,255,255,.70); }
+
+/* 다크 배경용 스켈레톤 톤 */
+.preload-card.inverted .skeleton::before {
+	background: linear-gradient(90deg,
+		rgba(255,255,255,.12) 0%,
+		rgba(255,255,255,.22) 50%,
+		rgba(255,255,255,.12) 100%);
+}
+
+/* 하단 띠/배지도 다크톤 가독성 강화 */
+.preload-foot { color: rgba(255,255,255,.85); }
+.badge        { border-color: rgba(255,255,255,.18); }
+.badge.muted  { color:#e5e7eb; background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18); }
+.badge.warn   { color:#fed7aa; background:rgba(245,158,11,.18); border-color:rgba(245,158,11,.35); }
+.badge.info   { color:#bfdbfe; background:rgba(59,130,246,.18); border-color:rgba(59,130,246,.35); }
+.benchmark em { color: rgba(255,255,255,.72); }
+
+/* 예측 가정 2줄 간격(모노 폰트 줄간격 보정) */
+#preload-assumption .mono + .mono { margin-top: 6px; }
+
+/* 카드 안 얇은 스켈레톤 바가 텍스트/구분선과 겹치지 않게 흐름에 넣기 */
+.preload-card .skeleton.s-line {
+	position: static !important; /* absolute 제거 → 레이아웃에 참여 */
+	inset: auto !important;
+	display: block;
+	height: 8px;
+	margin-top: 8px;             /* 진행바와 다음 콘텐츠 사이 간격 */
+	overflow: hidden;
+}
+
+/* 예측 가정 카드 본문(전력단가/상승률/할인율 등) 폰트 톤 맞추기 */
+#preload-assumption .mono,
+#preload-assumption p {
+	font-family: inherit;           /* 모노스페이스 느낌 제거 → 카드 본문과 톤 통일 */
+	font-size: .9375rem;            /* 15px */
+	line-height: 1.45;
+	font-weight: 400;               /* 값 강조 */
+	font-variant-numeric: tabular-nums; /* 숫자 폭 고정 */
+}
+
+/* 예측 가정 줄의 라벨/값 톤 통일 */
+#preload-assumption .assump-line .k { opacity: .65; }
+#preload-assumption .assump-line .v { font-weight: 600; opacity: .96; }
+#preload-assumption .assump-line .sep { opacity: .5; padding: 0 .15em; }
+
+/* 숫자 정렬 안정화 */
+#preload-assumption .assump-line {
+	font-size: .9375rem;
+	line-height: 1.45;
+	font-variant-numeric: tabular-nums;
+}
+
+/* JS 동작 시 스페이서는 완전히 제거(중복 여백 차단) */
+.js .header-spacer {
+  display: none !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+}
+
+/* =========================================================================
+	(전역 헤더/네비게이션 스타일은 손대지 않음)
+	필요 시 페이지 한정 보정만 추가:
+	.page-forecast .navbar .dropdown-menu { z-index: 20; }
+	======================================================================== */

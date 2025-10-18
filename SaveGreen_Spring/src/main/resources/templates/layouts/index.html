@@ -1,0 +1,127 @@
+<!--
+    * @Author : 연은주
+    * @Date : 2025-09-29
+    * @Description : index.html (메인페이지)
+    * @History :
+        - 메인페이지 구현시작
+        - 영상 및 대체 이미지 작업 완료
+        - 스크롤 이벤트 작업중
+        - 헤더 연결 및 사이즈 변경 작업 중
+        - 이미지 하단 마우스 이벤트 icon 작업 필요
+        - footer 연결 작업 완료
+    * 2025-09-29 : 초기작성
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SAVE GREEN</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+</head>
+<body class="main_page">
+    <div th:replace="~{layouts/header :: header}"></div> <!-- header.html 불러오기 -->
+    <div class="container">
+        <main class="main-banner">
+            <div class="overlay">
+                <video autoplay muted loop playsinline>
+                    <source src="/video/main_video_01.mp4" type="video/mp4">
+                    <!-- 브라우저가 지원 안 하면 기본 이미지 보여주기 -->
+                    <img src="/img/main_img_01.png" alt="background">
+                </video>
+
+                <div class="text-content">
+                    <h2 class="title_1">산업시설 탄소절감 플랫폼</h2>
+                    <h1 class="title_2">SAVE GREEN</h1>
+                    <p class="text_green">: 미래를 <span class="text_green" style="color: #51FD56; font-weight: bold; ">Green</span>하다</p>
+                    <div class="next_show0"> 
+                        <p id="scroll_show0">
+                            과거·현재·미래의 건축물 에너지 사용량을 분석하고,<br>
+                            녹색건축물·ZEB 전환을 통한 절세와 탄소 감축 효과를 시뮬레이션합니다.
+                        </p>
+                        <!-- <button class="finder_btn" ><a href="../html/GreenFinderMap.html"></a></button> -->
+                    </div>
+
+                    
+                </div> 
+            </div>
+        </main>
+        <main class="main-banner"> 
+            <div class="overlay">
+                <video autoplay muted loop playsinline>
+                    <source src="/video/main_video_02.mp4" type="video/mp4">
+                    <!-- 브라우저가 지원 안 하면 기본 이미지 보여주기 -->
+                    <img src="/img/main_img_02.png" alt="background">
+                </video>
+
+                <div class="text-content">
+                    <h1 class="title_2">GREEN FINDER</h1>
+                    <p>#녹색 건축물 #ZEB #건물 정보 검색</p>
+                    <div class="next_show1"> 
+                        <p  id="scroll_show1">
+                            녹색건축물 인증(G-seed)/ZEB 에 대해 설명하고,<br>
+                            건물 정보 검색을 통해 건물의 자세한 정보와,<br>
+                            월별, 연도별 에너지 배출량에 대해 확인합니다.
+                        </p>
+                        <button class="finder_btn" ><a href="/GreenFinder">바로가기</a></button>
+                    </div>
+                    
+                    
+                </div> 
+            </div>
+        </main>
+        <main class="main-banner">
+            <div class="overlay">
+                <video autoplay muted loop playsinline>
+                    <source src="/video/main_video_03.mp4" type="video/mp4">
+                    <!-- 브라우저가 지원 안 하면 기본 이미지 보여주기 -->
+                    <img src="/img/main_img_03.png" alt="background">
+                </video>
+
+                <div class="text-content">
+                    <h1 class="title_2">GREEN REMODELING</h1>
+                    <p>#그린리모델링 #에너지 절감 예측</p>
+                    <div class="next_show2"> 
+                        <p  id="scroll_show2">
+                            그린 리모델링 적용 전후의 변화를 데이터를 통해  비교하고,<br>
+                            머신러닝을 통해 향후 데이터를 예측,<br>
+                            리모델링 적합도를 추천을 통해 나타냅니다.
+                        </p>
+                        <button class="remodel_btn" ><a href="/forecast">바로가기</a> </button>
+                    </div>
+
+                </div> 
+            </div>
+        </main>
+        <main class="main-banner">
+            <div class="overlay">
+                <video autoplay muted loop playsinline>
+                    <source src="/video/main_video_04.mp4" type="video/mp4">
+                    <!-- 브라우저가 지원 안 하면 기본 이미지 보여주기 -->
+                    <img src="/img/main_img_04.png" alt="background">
+                </video>
+
+                <div class="text-content">
+                    <h1 class="title_2">ENERGY SIMULATOR</h1>
+                    <p>#에너지등급  #태양광패널  #시뮬레이터</p>
+                    <div class="next_show3"> 
+                        <p  id="scroll_show3">
+                            사용자 입력값을 기반으로 건물의 에너지 <br>
+                            자립도·녹색등급·비용 절감·탄소 절감 효과을 종합적으로 제공합니다.
+                        </p>
+                        <button class="remodel_btn" ><a href="/simulator">바로가기</a> </button>
+                    </div>
+                   
+                </div> 
+            </div>
+        </main>
+        <!-- <div th:replace="~{layouts/footer :: footer}"></div> -->
+    </div>
+    <!-- 스크롤 시 헤더 숨김 스크립트 -->
+    <script th:src="@{/js/script.js}"></script>
+    <!-- <div th:replace="layouts/footer :: footer"></div>  -->
+</body>
+
+</html>

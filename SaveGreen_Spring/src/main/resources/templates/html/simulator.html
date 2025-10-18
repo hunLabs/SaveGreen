@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulator</title>
+    <link rel="stylesheet" th:href="@{/css/simulator.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="/fontawesome/css/all.min.css">
+</head>
+<body>
+
+  
+    <div th:replace="layouts/header :: header"></div>
+<div id="introText">건물의 에너지 사용 데이터를 기반으로, 녹색건축물·ZEB 전환 시 필요한 설비 규모와 <strong>절세·탄소 절감 효과</strong>를 예측하는 시뮬레이터</div>
+
+
+<div class="captureWrapper" style="width:100vw; overflow:visible;">
+<div class="simulator-index">
+    <div class="simulator-wrapper">  
+    <section class="simulator-container">
+        <div class="simulator-input">
+            <h3>에너지 효율 등급 시뮬레이터</h3>
+            <form id="simulatorForm1" th:action="@{/simulate1}" method="post">
+                <input type="hidden" name="lat" id="lat1">
+                <input type="hidden" name="lon" id="lon1">
+                <input type="hidden" name="cate" id="category1">
+                <input type="hidden" name="avg" id="average1">
+                <input type="hidden" name="eik" id="eik1">
+                <div class="form-group">
+                    <img class="icon" src="/img/location.png" alt="Location Icon">
+                    <input type="text" id="juso1" class="searchBox" placeholder="주소를 검색하세요(ex :시/구/동/상세주소)" autocomplete="off">
+                    <div  class="dropdown searchResult"></div>
+                </div>
+                <div class="form-group">
+                    <img class="icon" src="/img/area.png" alt="Area Icon">
+                    <label>m²</label>
+                    <input type="number" name="area" step="any" id="area1" placeholder="건물 면적" required title="건물 면적을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <img class="icon" src="/img/battery.png" alt="Battery Icon">
+                    <label>kWh/년</label>
+                    <input type="number" name="energy" id="energy1" step="any" placeholder="에너지" required title="에너지 사용량을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <img class="icon" src="/img/solarpanel.png" alt="Solar Panel Icon">
+                    <label>대</label>
+                    <input type="number" name="panelCount" placeholder="태양광 패널 개수(선택)">
+                </div>
+                <div class="form-group">
+                    <img class="icon" src="/img/electric.png" alt="Electric Icon">
+                    <label>W</label>
+                    <input type="number" name="panelPower" placeholder="태양광 패널 정격출력(선택)">
+                </div>
+                <button type="submit" class="btn-submit">결과보기</button>
+            </form>
+        </div>        
+    </section>
+    
+    <section id="resultBox1" class="result-box1" style="display: none;">
+        <h3 style="text-align:center !important;">시뮬레이션 결과<button type="button" id="guideBtn1" class="info-btn"><i class="fas fa-info-circle"></i></h3>
+        <!-- <div id="spinner1" class="loading-spinner"></div> -->
+        <div class="result-item">
+            <span class="label">에너지 효율 등급</span>
+            <span class="value" id="grade">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">녹색 건축물 등급</span>
+            <span class="value" id="category">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">에너지 자립도</span>
+            <span class="value" id="energySelf">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">ZEB 등급</span>
+            <span class="value" id="zebGrade">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">재산세 감면</span>
+            <span class="value" id="propertyTax">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">취득세 감면</span>
+            <span class="value" id="acquireTax">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">건물 기준 완화</span>
+            <span class="value" id="areaBonus">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">ZEB인증비용 감면</span>
+            <span class="value" id="certificationDiscount">-</span>
+        </div>
+        <div class="result-item">
+            <span class="label">추가 혜택</span>
+            <span class="value" id="renewableSupport">-</span>
+        </div>
+        </section>
+
+    </div>
+    
+
+
+
+    <div class="simulator-wrapper">  
+    <section class="simulator-container">
+        <div class="simulator-input">
+            <h3>태양광 에너지 효율·경제성 시뮬레이터</h3>
+            <form id="simulatorForm2" th:action="@{/simulate2}" method="post">
+
+                <input type="hidden" name="lat" id="lat2">
+                <input type="hidden" name="lon" id="lon2">
+                <input type="hidden" name="cate" id="category2">
+                <input type="hidden" id="roadAddr" name="roadAddr">
+                <input type="hidden" id="jibunAddr" name="jibunAddr">
+                <input type="hidden" id="zipNo" name="zipNo">
+                <input type="hidden" name="avg" id="average2">
+                <input type="hidden" name="eik" id="eik2">
+               
+                <div class="form-group">
+                    <img class="icon" src="/img/location.png" alt="Location Icon">
+                    <input type="text" id="juso2" class="searchBox" placeholder="주소를 검색하세요(ex :시/구/동/상세주소)" autocomplete="off" required title="주소가 입력되지 않았습니다.">
+                    <div  class="dropdown searchResult"></div>
+                </div>
+                <div class="form-group">
+                    <img class="icon" src="/img/area.png" alt="Area Icon">
+                    <label>m²</label>
+                    <input type="number" id="area2" step="any" name="area" placeholder="건물 면적" required title="면적이 입력되지 않았습니다.">
+                </div>
+
+                <div class="form-row">
+                    <select name="currentGrade">
+                        <option value="0">건물 등급 (현재)</option>
+                        <option value="1">1+++등급</option>
+                        <option value="2">1++등급</option>
+                        <option value="3">1+등급</option>
+                        <option value="4">1등급</option>
+                        <option value="5">2등급</option>
+                        <option value="6">3등급</option>
+                        <option value="7">4등급</option>
+                        <option value="8">5등급</option>
+                        <option value="9">6등급</option>
+                        <option value="10">7등급</option>
+                    </select>
+                    <select name="targetGrade">
+                        <option value="0">건물 등급 (목표)</option>
+                        <option value="1">1+++등급</option>
+                        <option value="2">1++등급</option>
+                        <option value="3">1+등급</option>
+                        <option value="4">1등급</option>
+                        <option value="5">2등급</option>
+                        <option value="6">3등급</option>
+                        <option value="7">4등급</option>
+                        <option value="8">5등급</option>
+                        <option value="9">6등급</option>
+                        <option value="10">7등급</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <img class="icon" src="/img/electric.png" alt="Electric Icon">
+                    <label>W</label>
+                    <input type="number" name="panelPower" placeholder="태양광 패널 정격출력" required title="태양광 정격출력이 입력되지 않았습니다.시중 태양광 패널의 평균 정격출력은 500W입니다.">
+                </div>
+                <button type="submit" class="btn-submit" id="right">결과보기</button>
+            </form>
+        </div>
+    </section>
+    <section id="resultBox2" class="result-box2" style="display: none;">
+    <h3 style="text-align:center !important;">시뮬레이션 결과<button type="button" id="guideBtn2" class="info-btn"><i class="fas fa-info-circle"></i></button></h3>
+    <div class="dashboard">
+        <div class="card">
+        <div class="card-label">연간 에너지<br>절감량</div>
+        <div class="card-value" id="total">-</div>
+        <div class="card-unit">(kWh/년)</div>
+        </div>
+        <div class="card">
+        <div class="card-label">필요 태양광<br>패널 개수</div>
+        <div class="card-value" id="requiredPanels">-</div>
+        <div class="card-unit">(대)</div>
+        </div>
+        <div class="card">
+        <div class="card-label">연간 전기세<br>절감량</div>
+        <div class="card-value" id="annualSaveElectric">-</div>
+        <div class="card-unit">(만원)</div>
+        </div>
+        <div class="card">
+        <div class="card-label">연간 탄소배출<br>절감량</div>
+        <div class="card-value" id="annualSaveCO2">-</div>
+        <div class="card-unit">(톤)</div>
+        </div>
+    </div>
+    </section>
+    </div> 
+</div>
+    <div class="floating-btns">
+        <button id="downloadBtn" title="PDF로 저장">
+        <i class="fa-solid fa-file-pdf"></i>
+        </button>
+        <button id="sendMailBtn" title="메일로 보내기">
+        <i class="fa-solid fa-envelope"></i>
+        </button>
+    </div>
+
+    <div id="compareText" style="display: none;">나의 시뮬레이터 <strong>결과</strong>와 <strong>평균</strong> 비교해보기</div>
+   
+    <canvas id="intensityChart1" style="display: none;" >비교차트</canvas>
+
+    <canvas id="intensityChart2" style="display: none;" >비교차트</canvas>
+ 
+    <canvas id="intensityChart3" style="display: none;" >비교차트</canvas>
+</div>
+
+
+   
+   
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script th:src="@{/js/compare.js}" defer></script>
+<script th:src="@{/js/simulator.js}"></script>
+
+
+</body>
+<!-- <div th:replace="layouts/footer :: footer"></div> -->
+</html>
