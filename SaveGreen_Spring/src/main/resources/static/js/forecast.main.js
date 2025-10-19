@@ -1034,6 +1034,40 @@ async function applyCatalogHints(ctx) {
 
 /* ===== HOTFIX END ===== */
 
+// === ML 브리지 호출(POST /api/forecast/ml) ===
+async function callMl(payload) {
+	const res = await fetch('/api/forecast/ml', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+	if (!res.ok) throw new Error('ML ' + res.status);
+	return res.json(); // { savingKwhYr, savingCostYr, savingPct, paybackYears, label }
+}
+
+// === FE가 받은 data로 ML 페이로드 구성 ===
+function buildMlPayload(ctx, data) {
+	const fromYear = Number(ctx.from ?? new Date().getFullYear());
+	const floor = Number(ctx.floorAreaM2 ?? ctx.floorArea ?? 0);
+
+	// 현재 기준 사용량(kWh/yr) 추정: after[0] + saving[0]
+	let baselineKwh = 0;
+	try {
+		const a0 = Number(data?.series?.after?.[0] ?? 0);
+		const s0 = Number(data?.series?.saving?.[0] ?? 0);
+		baselineKwh = Math.max(0, Math.round(a0 + s0));
+	} catch {}
+
+	return {
+		typeRaw:   ctx.useName || ctx.mappedType || ctx.typeRaw || '사무동',
+		regionRaw: ctx.regionRaw || '대전 서구',
+		builtYear: Number(ctx.builtYear ?? (fromYear - 13)),
+		floorAreaM2: floor > 0 ? floor : 1500,
+		yearlyConsumption: baselineKwh > 0 ? [{ year: fromYear, electricity: baselineKwh }] : [],
+		monthlyConsumption: ctx.monthlyConsumption || []
+	};
+}
+
 
 /* ==========================================================
  * 5) runForecast(): 컨텍스트 수집→가정 주입→데이터 로드→차트
@@ -1279,6 +1313,19 @@ async function runForecast() {
 	const data = useDummy ? makeDummyForecast(ctx.from, ctx.to) : await fetchForecast(ctx);
 	window.FORECAST_DATA = data;
 
+	// ▼ ML KPI 호출(파이썬)
+    let kpiFromServer = null;
+    try {
+    	const mlPayload = buildMlPayload(ctx, data);
+    	kpiFromServer = await callMl(mlPayload);
+    	SaveGreen.log.kv('kpi', 'ml kpi', kpiFromServer, ['savingKwhYr','savingCostYr','savingPct','paybackYears','label']);
+    } catch (e) {
+    	console.warn('ML bridge failed → fallback', e?.message || e);
+    	// 화면이 멈추지 않도록 안전 폴백
+    	kpiFromServer = { savingKwhYr:0, savingCostYr:0, savingPct:0, paybackYears:99, label:'NOT_RECOMMEND' };
+    }
+
+
 	// 5-6) 배열 길이/타입 보정(Forward-fill)
 	{
 		const expectedYears = Array.isArray(data.years) ? data.years.map(String) : [];
@@ -1311,7 +1358,7 @@ async function runForecast() {
 		years: data.years,
 		series: data.series,
 		cost: data.cost,
-		kpiFromApi: data.kpi,
+		kpiFromApi: kpiFromServer,
 		base: ctx.daeBase || null,
 		floorArea: Number.isFinite(floorArea) ? floorArea : undefined
 	});

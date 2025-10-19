@@ -1,151 +1,160 @@
 {
-  "_doc": {
-    "title": "대전(DAE) 리모델링 가정값 — KPI/예측/차트용 (확장 스키마, 주석형 설명 포함)",
-    "purpose": "FE가 타입별 기본 가정·등급 규칙·표시 정책을 한 번에 로드 → KPI/요약/배너/차트에 일관 반영",
-    "version": "2025-10-18",
-    "how_to_use": [
-      "1) providers/main에서 mappedType(office|factory|school|hospital) 확정",
-      "2) base = dae.types[mappedType].base 로 단가/투자비/절감률 주입",
-      "3) KPI 계산: savingKwh, cost.saving, paybackYears 산출 (clamp/round 규칙은 kpiDisplay 참조)",
-      "4) 등급/EUI 표시는 euiRules.mode 및 해당 임계값/밴드 적용",
-      "5) UI 표기(%)는 defaults의 소수값을 ×100 변환해 표시"
-    ],
-    "notes": [
-      "※ 이 파일의 수치는 초기/더미 값입니다. 실제 요금제·견적·실측 데이터가 확보되면 교체하세요.",
-      "※ JSON은 주석 문법(//, /* */)을 허용하지 않으므로, 주석형 설명은 문자열 필드로 제공합니다."
-    ]
-  },
+    "_doc": {
+        "title": "대전(DAE) 리모델링 가정값 — KPI/예측/차트용 (확장 스키마, 주석형 설명 포함)",
+        "purpose": "FE가 타입별 기본 가정·등급 규칙·표시 정책을 한 번에 로드 → KPI/요약/배너/차트에 일관 반영",
+        "version": "2025-10-19",
+        "how_to_use": [
+            "1) providers/main에서 mappedType(factory|school|hospital|office) 확정",
+            "2) base = dae.types[mappedType].base 로 단가/투자비/절감률 주입",
+            "3) KPI 계산: savingKwh, costSaving, paybackYears 산출 (formulas 적용)",
+            "4) 등급/EUI 표시는 euiRules.mode 및 해당 임계값/밴드 적용",
+            "5) UI 표기(%)는 defaults의 소수값을 ×100 변환해 표시",
+            "※ 가능하면 KPI는 백엔드 응답을 그대로 사용하고, FE 계산은 보조로만 사용"
+        ],
+        "notes": [
+            "※ 이 파일의 수치는 초기/더미 값입니다. 실제 요금제·견적·실측 데이터가 확보되면 교체하세요.",
+            "※ JSON은 주석 문법을 허용하지 않으므로, 주석형 설명은 문자열 필드로 제공합니다."
+        ]
+    },
 
-  "meta": {
-    "region": "daejeon",
-    "currency": "KRW",
-    "units": {
-      "tariff": "원/kWh",
-      "capexPerM2": "원/㎡",
-      "savingPct": "0~1(소수)",
-      "energy": "kWh/년",
-      "cost": "원/년",
-      "eui": "kWh/㎡·년",
-      "years": "년"
+    "meta": {
+        "region": "daejeon",
+        "currency": "KRW",
+        "units": {
+            "tariff": "원/kWh",
+            "capexPerM2": "원/㎡",
+            "capexFixed": "원",
+            "savingPct": "0~1(소수)",
+            "energy": "kWh/년",
+            "cost": "원/년",
+            "eui": "kWh/㎡·년",
+            "years": "년"
+        },
+        "labels": {
+            "tariff": "전력단가",
+            "capexPerM2": "투자비(㎡당)",
+            "capexFixed": "고정 투자비",
+            "capexFreeArea": "무상구간(㎡)",
+            "savingPct": "절감률",
+            "escalation": "전력단가 연상승률",
+            "discount": "할인율"
+        },
+        "disclaimer": "본 값은 시연/기본 가정입니다. 실제 사업 적용 시 최신 단가/견적/운영데이터로 교체해야 합니다.",
+        "formulas": {
+            "__comment": "FE/BE 계산식 정합성을 위해 산식 명시. 구현 언어에 맞게 그대로 변환.",
+            "energySaving_kWh": "baseline_kWh * savingPct",
+            "costSaving_KRW": "energySaving_kWh * tariff",
+            "capex_KRW": "capexFixed + capexPerM2 * max(0, floorArea_m2 - capexFreeArea)",
+            "simplePayback_years": "capex_KRW / costSaving_KRW",
+            "EUI_site_el": "baseline_kWh / floorArea_m2",
+            "EUI_primary": "EUI_site_el * pef.electricity"
+        }
     },
-    "labels": {
-      "tariff": "전력단가",
-      "capexPerM2": "투자비(㎡당)",
-      "savingPct": "절감률",
-      "escalation": "전력단가 연상승률",
-      "discount": "할인율"
+
+    "defaults": {
+        "__comment": "프로젝트 전역 공통 상수(소수값). UI에 % 표기 시 ×100 변환.",
+        "electricityEscalationPctPerYear": 0.03,
+        "discountRate": 0.05,
+        "maintenanceOpexAsPctOfCapex": 0.01,
+        "pvDegradationPctPerYear": 0.007
     },
-    "disclaimer": "본 값은 시연/기본 가정입니다. 실제 사업 적용 시 최신 단가/견적/운영데이터로 교체해야 합니다.",
-    "formulas": {
-      "__comment": "FE/BE 계산식 정합성을 위해 산식 명시. 구현 언어에 맞게 그대로 변환.",
-      "energySaving_kWh": "baseline_kWh × savingPct",
-      "costSaving_KRW": "energySaving_kWh × tariff",
-      "capex_KRW": "capexPerM2 × floorArea_m2",
-      "simplePayback_years": "capex_KRW / costSaving_KRW",
-      "EUI_site_el": "baseline_kWh / floorArea_m2",
-      "EUI_primary": "EUI_site_el × pef.electricity"
+
+    "euiRules": {
+        "__comment": "등급/EUI 판정 규칙. mode='electricity'면 전력EUI 임계값, 'primary'면 PEF×밴드 사용.",
+        "mode": "electricity",
+        "electricityGradeThresholds": { "1": 120, "2": 140, "3": 180 },
+        "pef": { "electricity": 2.7 },
+        "primaryGradeBands": [
+            { "min": 0,   "max": 80,  "grade": "1+++", "label": "최우수" },
+            { "min": 80,  "max": 140, "grade": "1++",  "label": "최우수" },
+            { "min": 140, "max": 200, "grade": "1+",   "label": "최우수" },
+            { "min": 200, "max": 260, "grade": "1",    "label": "우수" },
+            { "min": 260, "max": 320, "grade": "2",    "label": "우수" },
+            { "min": 320, "max": 380, "grade": "3",    "label": "양호" },
+            { "min": 380, "max": 450, "grade": "4",    "label": "양호" },
+            { "min": 450, "max": 520, "grade": "5",    "label": "일반" },
+            { "min": 520, "max": 610, "grade": "6",    "label": "일반" },
+            { "min": 610, "max": 700, "grade": "7",    "label": "일반" }
+        ]
+    },
+
+    "kpiDisplay": {
+        "__comment": "표시/라운딩/클램프 정책. 표시 일관성 보장 용도.",
+        "upgradeOneStep": true,
+        "rounding": {
+            "costSavingKRW": 0,
+            "energySavingKWh": 0,
+            "paybackYears": 2
+        },
+        "clampPaybackYears": [3, 8]
+    },
+
+    "types": {
+        "factory": {
+            "label": "공장/산업시설",
+            "notes": "공정부하 변동성 고려해 보수적 절감률.",
+            "keywords": ["공장", "제조", "산단", "플랜트", "물류센터", "창고"],
+            "base": {
+                "tariff": 140,
+                "capexFixed": 30000000,
+                "capexFreeArea": 500,
+                "capexPerM2": 220000,
+                "savingPct": 0.18
+            }
+        },
+        "school": {
+            "label": "학교/교육시설",
+            "notes": "운영패턴 개선 여지로 절감률 상향.",
+            "keywords": ["학교", "초등", "중학교", "고등학교", "대학교", "캠퍼스", "교육"],
+            "base": {
+                "tariff": 130,
+                "capexFixed": 25000000,
+                "capexFreeArea": 400,
+                "capexPerM2": 180000,
+                "savingPct": 0.16
+            }
+        },
+        "hospital": {
+            "label": "병원/의료시설",
+            "notes": "설비 복잡도/상시부하로 CAPEX·단가 상향.",
+            "keywords": ["병원", "의원", "메디컬", "요양", "클리닉"],
+            "base": {
+                "tariff": 170,
+                "capexFixed": 40000000,
+                "capexFreeArea": 300,
+                "capexPerM2": 260000,
+                "savingPct": 0.17
+            }
+        },
+        "office": {
+            "label": "업무시설(오피스)",
+            "notes": "일반 사무용 건물 기준. BEMS/조명/HVAC 리트로핏 가정.",
+            "keywords": ["오피스", "사무", "본사", "오피스텔(비주거)", "행정", "공공청사"],
+            "base": {
+                "tariff": 150,
+                "capexFixed": 20000000,
+                "capexFreeArea": 300,
+                "capexPerM2": 200000,
+                "savingPct": 0.15
+            }
+        }
+    },
+
+    "uiHints": {
+        "__comment": "FE 표기 힌트(로더·카드·배지 등). 구현에 맞춰 자유롭게 해석/사용.",
+        "loader": {
+            "assumptionBadgePrefix": "예측 가정",
+            "showUnits": true,
+            "showTypeLabel": true,
+            "usePercentForRates": true
+        },
+        "chart": {
+            "rightAxisCost": { "min": 0, "lockScaleAcrossStages": true },
+            "sequence": "A→B→C",
+            "ensOrder": "bars_then_points_then_line"
+        },
+        "banner": {
+            "statusColors": { "recommend": "#133D1E", "conditional": "#F57C00", "not_recommend": "#D80004" }
+        }
     }
-  },
-
-  "defaults": {
-    "__comment": "프로젝트 전역 공통 상수(소수값). UI에 % 표기 시 ×100 변환.",
-    "electricityEscalationPctPerYear": 0.03,
-    "discountRate": 0.05,
-    "maintenanceOpexAsPctOfCapex": 0.01,
-    "pvDegradationPctPerYear": 0.007
-  },
-
-  "euiRules": {
-    "__comment": "등급/EUI 판정 규칙. mode='electricity'면 전력EUI 임계값, 'primary'면 PEF×밴드 사용.",
-    "mode": "electricity",
-    "electricityGradeThresholds": { "1": 120, "2": 140, "3": 180 },
-
-    "pef": { "electricity": 2.7 },
-
-    "primaryGradeBands": [
-      { "min": 0,   "max": 80,  "grade": "1+++", "label": "최우수" },
-      { "min": 80,  "max": 140, "grade": "1++",  "label": "최우수" },
-      { "min": 140, "max": 200, "grade": "1+",   "label": "최우수" },
-      { "min": 200, "max": 260, "grade": "1",    "label": "우수" },
-      { "min": 260, "max": 320, "grade": "2",    "label": "우수" },
-      { "min": 320, "max": 380, "grade": "3",    "label": "양호" },
-      { "min": 380, "max": 450, "grade": "4",    "label": "양호" },
-      { "min": 450, "max": 520, "grade": "5",    "label": "일반" },
-      { "min": 520, "max": 610, "grade": "6",    "label": "일반" },
-      { "min": 610, "max": 700, "grade": "7",    "label": "일반" }
-    ]
-  },
-
-  "kpiDisplay": {
-    "__comment": "표시/라운딩/클램프 정책. 표시 일관성 보장 용도.",
-    "upgradeOneStep": true,
-    "rounding": {
-      "costSavingKRW": 0,
-      "energySavingKWh": 0,
-      "paybackYears": 2
-    },
-    "clampPaybackYears": [3, 8]
-  },
-
-  "types": {
-    "office": {
-      "label": "업무시설(오피스)",
-      "notes": "일반 사무용 건물 기준. BEMS/조명/HVAC 리트로핏 가정.",
-      "keywords": ["오피스", "사무", "본사", "오피스텔(비주거)", "행정", "공공청사"],
-      "base": {
-        "__comment": "단가·CAPEX·절감률은 초기 가정치(더미). 운영 데이터로 교체 권장.",
-        "tariff": 150,
-        "capexPerM2": 180000,
-        "savingPct": 0.18
-      }
-    },
-    "factory": {
-      "label": "공장/산업시설",
-      "notes": "공정부하 변동성 고려해 보수적 절감률.",
-      "keywords": ["공장", "제조", "산단", "플랜트", "물류센터", "창고"],
-      "base": {
-        "tariff": 125,
-        "capexPerM2": 160000,
-        "savingPct": 0.15
-      }
-    },
-    "school": {
-      "label": "학교/교육시설",
-      "notes": "운영패턴 개선 여지로 절감률 상향.",
-      "keywords": ["학교", "초등", "중학교", "고등학교", "대학교", "캠퍼스", "교육"],
-      "base": {
-        "tariff": 140,
-        "capexPerM2": 170000,
-        "savingPct": 0.20
-      }
-    },
-    "hospital": {
-      "label": "병원/의료시설",
-      "notes": "설비 복잡도/상시부하로 CAPEX·단가 상향.",
-      "keywords": ["병원", "의원", "메디컬", "요양", "클리닉"],
-      "base": {
-        "tariff": 160,
-        "capexPerM2": 220000,
-        "savingPct": 0.22
-      }
-    }
-  },
-
-  "uiHints": {
-    "__comment": "FE 표기 힌트(로더·카드·배지 등). 구현에 맞춰 자유롭게 해석/사용.",
-    "loader": {
-      "assumptionBadgePrefix": "예측 가정",
-      "showUnits": true,
-      "showTypeLabel": true,
-      "usePercentForRates": true
-    },
-    "chart": {
-      "rightAxisCost": { "min": 0, "lockScaleAcrossStages": true },
-      "sequence": "A→B→C",
-      "ensOrder": "bars_then_points_then_line"
-    },
-    "banner": {
-      "statusColors": { "recommend": "#133D1E", "conditional": "#F57C00", "not_recommend": "#D80004" }
-    }
-  }
 }

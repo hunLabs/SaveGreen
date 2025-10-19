@@ -1,0 +1,282 @@
+
+SaveGreen — ML 환경 세팅 & FastAPI 스켈레톤 가이드 (PyCharm 전용)
+=================================================================
+목표
+----
+이 문서는 ‘최종 프로젝트 - 탄소 중립’의 ML 파트(파이썬, FastAPI)를 **학원/집 어떤 PC에서든 동일하게** 빠르게 셋업하고 실행할 수 있도록 만든 **완전 가이드**입니다.
+ 터미널 명령어가 익숙하지 않아도 **PyCharm의 UI만으로** 진행할 수 있게 단계별로 설명합니다. 
+또한, 스프링부트(백엔드)와의 연동 구조, 데이터 표준화 정책(서버 단일 소스), 모델 학습/추론 흐름까지 한눈에 볼 수 있도록 구성했습니다.
+
+전체 개요
+--------
+1) **프로젝트 구조(모노레포)**  
+   - 스프링부트와 파이썬(ML)을 같은 깃 루트 아래 나란히 두되, 서로의 소스 트리(src)는 섞지 않습니다.
+2) **데이터 표준화는 서버(스프링) 단일 소스**  
+   - 학습용 데이터와 실시간 추론 입력 모두 **스프링에서 동일 규칙으로 표준화**합니다.  
+   - 파이썬은 표준화된 값을 입력으로 받아 오직 ML(학습/추론)만 담당합니다.
+3) **통신은 HTTP API**  
+   - 파일 경로 공유나 네트워크 드라이브 의존 없이, **스프링 ↔ FastAPI**는 HTTP로 주고받습니다.
+4) **PyCharm만으로 설정/실행**  
+   - 가상환경(venv) 생성, 패키지 설치, Uvicorn 실행을 모두 **PyCharm 실행 구성을 통해** 처리합니다.
+
+폴더 구조 (권장)
+----------------
+CO2/                                   ← 깃 루트(이미 존재)
+├─ SaveGreen_Spring/                   ← 스프링 부트 프로젝트(그대로 유지)
+│  └─ src/main/resources/static/
+│     ├─ config/dae.json
+│     └─ dummy/ml_dataset.json         ← FE 데모/내보내기용(원본)
+└─ ml/                                 ← 파이썬(FastAPI) 프로젝트(신규)
+   ├─ app/
+   │  ├─ main.py                       ← FastAPI 엔트리: /health, /predict
+   │  ├─ schema.py                     ← 요청/응답 스키마(Pydantic)
+   │  ├─ model.py                      ← (추후) 학습/추론 래퍼(모델 로딩, 예측)
+   │  └─ utils.py                      ← (선택) 전처리/공통 유틸
+   ├─ data/                            ← 학습 산출물/모델 파일(pkl 등) 보관용
+   └─ requirements.txt                 ← 패키지 목록(선택)
+
+왜 이렇게 분리하나?
+------------------
+- **일관성/재현성**: 학습과 추론에 같은 표준화 규칙 적용(서버 단일 소스).  
+- **운영 편의**: 스프링과 파이썬을 **독립 배포/실행** 가능. 포트만 합의하면 됩니다.
+- **경로 스트레스 제거**: 운영체제/개발환경이 달라도 **API로 데이터 교환** → 경로 문제 X.
+
+PyCharm로 환경 설정 — 클릭만으로 끝내기
+--------------------------------------
+[전제] PC에 Python 3.x가 설치되어 있어야 합니다(3.10+ 권장).
+
+A) 프로젝트 열기
+----------------
+1. PyCharm 실행 → **Open** → `CO2/ml` 폴더 선택 → Open as Project.
+2. (처음 열 때) 창 상단에 **Trust Project?** 배너가 보이면 **Trust** 클릭.
+
+B) 가상환경(venv) 만들기
+------------------------
+1. 메뉴 **파일 → 설정** (Ctrl+,)  
+2. 좌측 **프로젝트: ml → Python 인터프리터** 선택  
+3. 우측 상단 톱니(⚙) 클릭 → **인터프리터 추가…**  
+4. **로컬 인터프리터 추가 → 새 가상환경(Virtualenv)** 선택  
+   - 새 환경 위치: `CO2/ml/.venv` (자동 제안되면 그대로 사용)  
+   - 기준 인터프리터: 설치된 Python 3.x 선택  
+   - **만들기(Create)** → 창 닫기  
+5. 다시 **Python 인터프리터** 화면에서 지금 만든 **.venv**가 선택돼 있는지 확인 → **적용/확인**  
+6. **확인 방법**  
+   - 우하단 상태바에 `Python 3.x (ml)` 또는 `Python 3.x (.venv)` 표시 확인  
+   - 안 보이면 **보기 → 모양 → 상태 표시줄** 체크 후 상태바 우클릭 → Python Interpreter 항목 체크
+
+C) 패키지 설치(터미널 없이)
+---------------------------
+1. **파일 → 설정 → 프로젝트: ml → Python 인터프리터**로 이동  
+2. 패키지 목록 아래 **+ 버튼** 클릭 → 다음 패키지를 검색 후 Install  
+   - `fastapi`
+   - `uvicorn[standard]`
+   - `pydantic` (2.x 권장)
+   - `numpy`
+   - `pandas`
+   - `scikit-learn`
+3. (선택) `requirements.txt` 파일에 버전 고정 가능
+   예)
+   fastapi==0.115.0
+   uvicorn[standard]==0.30.0
+   pydantic==2.9.0
+   numpy
+   pandas
+   scikit-learn
+
+D) 기본 파일 생성 (스켈레톤)
+----------------------------
+1. 프로젝트 창에서 **app** 폴더 우클릭 → **새로 만들기 → Python 파일**
+2. 파일 3개 생성: `schema.py`, `main.py`, `model.py`
+
+[파일] app/schema.py — 요청/응답 스키마 정의
+-------------------------------------------
+- 목적: API 계약(스프링 ↔ FastAPI) 명확화. 필드 타입/필수 여부를 한 곳에서 관리.
+- 주의: Pydantic v2 기준. 추후 필드 추가 시 여기부터 바꾸면 유지보수 용이.
+
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
+
+class MonthPoint(BaseModel):
+	month: int                  # 1~12
+	electricity: float          # 월간 전력 사용량(kWh)
+
+class YearPoint(BaseModel):
+	year: int                   # 예: 2018
+	electricity: float          # 연간 전력 사용량(kWh)
+
+class PredictRequest(BaseModel):
+	# 스프링 표준화 규칙을 거친 값으로 전달받는다고 가정(type/region은 정해진 카테고리)
+	type: str
+	region: Optional[str] = None
+	builtYear: Optional[int] = None
+	floorAreaM2: Optional[float] = None
+	monthlyConsumption: Optional[List[MonthPoint]] = None
+	yearlyConsumption: Optional[List[YearPoint]] = None
+	# 학습/추론 중간 메타(선택)
+	meta: Optional[Dict[str, Any]] = None
+
+class PredictResponse(BaseModel):
+	savingKwhYr: float          # 연간 절감량(kWh/년)
+	savingCostYr: float         # 연간 비용 절감(원/년)
+	savingPct: float            # 절감률(%)
+	paybackYears: float         # 투자 회수기간(년)
+	label: str                  # RECOMMEND | CONDITIONAL | NOT_RECOMMEND
+
+[파일] app/main.py — FastAPI 엔트리 포인트
+-----------------------------------------
+- 목적: /health와 /predict 엔드포인트 제공
+- 현재 /predict는 더미 응답. model.py의 실제 예측으로 교체 예정.
+
+from fastapi import FastAPI
+from .schema import PredictRequest, PredictResponse
+
+app = FastAPI(title="SaveGreen ML API")
+
+@app.get("/health")
+def health():
+	"""
+	서비스 헬스 체크 엔드포인트.
+	- 스프링에서 ML 서버 생존 여부 확인에 사용.
+	"""
+	return {"status": "ok"}
+
+@app.post("/predict", response_model=PredictResponse)
+def predict(req: PredictRequest):
+	"""
+	실시간 추론 엔드포인트(스프링 → FastAPI)
+	- 입력은 스프링 표준화 규칙을 통과한 값이어야 함.
+	- 현재는 더미 값을 반환. 추후 model.py의 실제 예측으로 교체.
+	"""
+	# TODO: model.py의 실제 모델 호출로 교체
+	return PredictResponse(
+		savingKwhYr=123456,
+		savingCostYr=9876543,
+		savingPct=18.5,
+		paybackYears=4.2,
+		label="RECOMMEND"
+	)
+
+[파일] app/model.py — 모델 래퍼(자리만 잡기)
+-------------------------------------------
+- 목적: 모델 로딩/전처리/예측을 하나의 클래스로 캡슐화.
+- 나중에 joblib/pickle로 저장된 모델을 로드하고, 특성 엔지니어링을 utils.py에 분리.
+
+class DummyModel:
+	def predict(self, req_dict):
+		# TODO: 실제 예측 로직으로 교체
+		return {
+			"savingKwhYr": 123456,
+			"savingCostYr": 9876543,
+			"savingPct": 18.5,
+			"paybackYears": 4.2,
+			"label": "RECOMMEND"
+		}
+
+E) 실행 설정 만들기 — Uvicorn (터미널 無)
+--------------------------------------
+1. 메뉴 **실행 → 구성 편집…**
+2. 좌측 상단 **+** → **Python** 선택
+3. 이름: `Uvicorn (FastAPI)`
+4. **모듈 이름**: `uvicorn`
+5. **매개변수**: `app.main:app --reload --port 8000`
+6. **작업 디렉터리**: `CO2/ml` (프로젝트 루트)
+7. **Python 인터프리터**: `.venv` 선택
+8. **적용 → 확인** 후 상단 ▶ 실행
+
+F) 동작 확인
+------------
+- 브라우저에서 `http://localhost:8000/health` → `{"status":"ok"}` 면 성공
+- API 문서(Swagger): `http://localhost:8000/docs` 접속 → /predict 테스트 가능
+
+스프링과 연동 개념
+------------------
+1) 스프링은 `/api/ml/dataset/normalized` 엔드포인트로 **표준화된 학습 데이터**를 제공(학습 시 파이썬이 이걸 사용).  
+2) FE는 `/api/forecast/ml`만 호출 → 스프링이 입력 표준화 → **FastAPI /predict**에 전달 → 응답을 FE로 반환 → 차트/KPI 렌더.  
+3) 장점: 학습/추론 둘 다 **동일 표준화 규칙/버전** 유지. FE는 복잡한 매핑 제거.
+
+자주 발생하는 문제 & 해결
+-------------------------
+- 상태바에 `.venv`가 안 보임  
+  → **보기 → 모양 → 상태 표시줄** 체크, 상태바 우클릭 후 Python Interpreter 표시.  
+- `uvicorn` 모듈을 못 찾음  
+  → **파일 → 설정 → Python 인터프리터**에서 `uvicorn[standard]`가 설치됐는지 확인.  
+- 실행했는데 8000 포트가 이미 사용 중  
+  → 실행 구성의 포트를 `8001` 등으로 변경, 또는 다른 ML 인스턴스 종료.  
+- `pydantic` 버전 충돌  
+  → v2 기준 코드. v1이라면 BaseModel import/사용 방식이 다르니 **v2로 설치** 권장.
+
+운영/버전관리 팁
+---------------
+- `.gitignore`에 아래 추가 권장(모델/캐시/venv 제외):
+  ml/.venv/
+  ml/__pycache__/
+  ml/.pytest_cache/
+  ml/data/*.pkl
+- FastAPI와 스프링의 스키마 변경 시,  
+  1) schema.py → 2) 스프링 DTO → 3) 문서(이 파일) 순서로 동기화.
+
+다음 단계(학습 연결)
+--------------------
+- 파이썬에서 `GET http://localhost:8080/api/ml/dataset/normalized`로 표준화 데이터 로드 → 연간 패널 변환 → 모델 학습 → `ml/data/model.pkl` 저장.  
+- FastAPI 시작 시 model.pkl 로드 → /predict에서 실제 예측 반환.  
+- 스프링 `MlBridgeService`에서 `/predict` 호출 후 KPI/배너/차트로 반영.
+
+끝.
+
+
+
+
+
+
+
+
+
+
+
+
+
+[요약] 모델 검증/선정/차트 A·B·C 운영 계획
+
+왜 train/test(8:2, 7:3)로 나누는가
+
+목적: “일반화 성능”을 보기 위해서. 학습에 쓴 데이터로만 평가하면 과적합 여부를 알 수 없음.
+
+방법:
+
+Hold-out: 데이터를 학습(train)과 평가(test)로 분리(예: 8:2, 7:3). test 성능(MAE/RMSE/R²)을 기준으로 모델 비교.
+
+K-Fold CV: 데이터를 K등분하여 번갈아 학습/평가 후 평균 성능을 사용(샘플 적을 때 더 안정적).
+
+기준 지표: 회귀는 MAE/RMSE(낮을수록 좋음), R²(높을수록 좋음). 성능·안정성·과적합 여부를 함께 본다.
+
+“어떤 알고리즘이 최적?”은 어떻게 정하나
+
+절차 기반 선택(임의 선택 아님):
+
+후보군 준비: 선형계열(Ridge/Lasso/ElasticNet), 트리/앙상블(RandomForest), 부스팅(XGBoost/LightGBM) 등.
+
+동일 피처/전처리로 K-Fold CV 진행 → 지표 비교(주지표: MAE, 보조: RMSE·R²).
+
+상위 모델들 하이퍼파라미터 튜닝(Grid/Random/Bayesian).
+
+최종 선정 시 해석성·예측력·속도·배포 용이성(의존성)을 함께 고려.
+
+현재 단계: 선형(ElasticNet/Ridge)로 baseline 확보 → 필요 시 트리/부스팅으로 확장.
+
+차트 A/B/C에 “모델/공식” 매칭 및 표시 운영
+
+설계: FastAPI /predict에 variant 파라미터 추가(A|B|C).
+
+A: 모델/공식 A(예: 선형회귀 기반, EUI 위주 피처).
+
+B: 모델/공식 B(예: 트리/부스팅, 사용량·면적 상호작용 반영).
+
+C: 종합(앙상블: A/B 가중 평균 or 규칙+모델 혼합).
+
+학습 산출물: model_A.pkl, model_B.pkl (또는 하나의 pkl에 멀티 구성).
+
+추론: /predict?variant=A|B|C로 절감률만 다르게 산출 → 같은 정책(단가/감쇠/ CAPEX)으로 사용량·비용을 계산해 차트 생성.
+
+FE 동작: 탭/버튼으로 variant 전환 호출(또는 A/B 얇은선, C 굵은선 동시 표기).
+
+장점: 입력/출력 스키마 고정(호환성 유지), 비교 시연 용이, 모델 교체/튜닝이 서버 한 곳에서 관리됨.

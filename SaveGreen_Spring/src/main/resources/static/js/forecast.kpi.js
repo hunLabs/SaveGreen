@@ -5,7 +5,7 @@
 	window.SaveGreen.Forecast = window.SaveGreen.Forecast || {};
 
     // 맨 위 근처에 전역 스위치 추가
-    const USE_API_KPI = false; // true면 API KPI를 그대로 사용, false면 FE에서 재계산
+    const USE_API_KPI = true; // true면 API KPI를 그대로 사용, false면 FE에서 재계산
 
     /* ---------- KPI / 상태 / 출력 ---------- */
     // kpi 계산 (API가 준 kpi가 없을때 FE에서 계산)
@@ -59,28 +59,37 @@
             }
         }
 
-        // 4) 회수기간(년) = (capexPerM2 × 면적) / 연간 비용절감
-        //    - base.capexPerM2, floorArea 모두 유효하면 사용
+        // 4) 회수기간(년) = CAPEX / 연간 비용절감
+        //    CAPEX = capexFixed + capexPerM2 × max(0, floorArea - capexFreeArea)
+        //    - base.capexFixed / base.capexPerM2 / base.capexFreeArea / floorArea / savingCost가 모두 유효하면 적용
         //    - 아니면 기존 폴백 후 3~8년 clamp
         let paybackYears;
         {
-            const capexPerM2 = Number(base?.capexPerM2);
-            const area       = Number(floorArea);
-            if (Number.isFinite(capexPerM2) && capexPerM2 > 0 &&
-                Number.isFinite(area)       && area       > 0 &&
-                Number.isFinite(savingCost) && savingCost > 0) {
+        	const capexFixed     = Number(base?.capexFixed);
+        	const capexPerM2     = Number(base?.capexPerM2);
+        	const capexFreeArea  = Number(base?.capexFreeArea);
+        	const area           = Number(floorArea);
 
-                const capex = capexPerM2 * area;
-                paybackYears = capex / savingCost;
-            } else {
-                // 폴백(기존 로직 유지)
-                const denom = Math.max(1, savingKwh);
-                paybackYears = (afterKwh / denom) * 0.8;
-            }
+        	if (Number.isFinite(capexFixed)    && capexFixed    >= 0 &&
+        		Number.isFinite(capexPerM2)    && capexPerM2    >  0 &&
+        		Number.isFinite(capexFreeArea) && capexFreeArea >= 0 &&
+        		Number.isFinite(area)          && area          >  0 &&
+        		Number.isFinite(savingCost)    && savingCost    >  0) {
 
-            // 보수적 표시 범위 고정
-            paybackYears = clamp(paybackYears, 3, 8);
+        		const effArea = Math.max(0, area - capexFreeArea);
+        		const capex   = capexFixed + capexPerM2 * effArea;
+        		paybackYears  = capex / savingCost;
+        	} else {
+        		// 폴백(기존 로직 유지)
+        		const denom = Math.max(1, savingKwh);
+        		paybackYears = (afterKwh / denom) * 0.8;
+        	}
+
+        	// 보수적 표시 범위 고정
+        	paybackYears = clamp(paybackYears, 3, 8);
         }
+
+
 
         // 5) 절감률(%) = savingKwh / beforeKwh
         const savingPct = (beforeKwh > 0)
