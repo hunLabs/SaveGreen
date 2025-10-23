@@ -7,11 +7,15 @@ Swal.fire({
          +'<b>2.</b>태양광 패널 갯수,정격출력 입력하기<br>'
          +'<b>3.</b> 결과확인 버튼 누르기<br>'
          +'<h4>태양광 에너지 효율 경제성 시뮬레이터</h4>'
-         +'<b>1.</b>지도 클릭(건물 정보 입력) 혹은 주소검색으로 주소,면적 입력하기<br>'
+         +'<b>1.</b>지도 클릭(건물 정보 입력)<br>   혹은 주소검색으로 주소,면적 입력하기<br>'
          +'<b>2.</b>현재 등급,목표 등급 선택하기<br>'
          +'<b>3.</b>태양광 패널 정격출력 입력하기<br>'
          +'<b>4.</b> 결과확인 버튼 누르기<br>',
     icon: 'info',
+    customClass: {
+      htmlContainer: 'swal-text',
+          
+    },
     confirmButtonText: '확인'
   });
   // 시뮬레이터 결과 가이드
@@ -22,15 +26,18 @@ Swal.fire({
       Swal.fire({
         title: '에너지 등급 시뮬레이터 참고사항',
         html: `
-          <b>1.</b> 해당 결과는 주소, 건물면적, 위도 경도 기준 일사량, 태양광 패널 정격 출력, 에너지 효율 등급 기준을 바탕으로 작성 되었습니다.<br><br>
-          <b>2.</b> 태양광 패널의 발전 효율 상수는 0.8로 책정되었습니다.<br> 일반적인 태양광 패널 발전 효율은 0.75~0.85 사이입니다.<br><br>
-          <b>3.</b> 에너지 효율 등급은 국토교통부 고시 제2021-1405호(2021.12.31) 기준을 따릅니다.<br>위도 경도 기준 일사량은 나사 위성 자료를 기반으로 산출되었습니다.<br><br>
-          <b>4.</b> ZEB등급,녹색건축물등급에 따른 감면율은 공공기관 정보를 바탕으로 작성되었습니다.<br><br>
-          <b>5.</b> 절세율은 중복되지 않으며, 결과의 감면율은 두 인증 등급의 감면율 중 높은 것으로 나타납니다.<br><br>
+          <b>1.</b> 해당 결과는 주소, 건물면적, 위도 경도 기준 일사량, 태양광 패널 정격 출력, 에너지 효율 등급 기준을 바탕으로 작성 되었습니다.<br>
+          <b>2.</b> 태양광 패널의 발전 효율 상수는 0.8로 책정되었습니다.<br>   일반적인 태양광 패널 발전 효율은 0.75~0.85 사이입니다.<br>
+          <b>3.</b> 에너지 효율 등급은 국토교통부 고시 제2021-1405호(2021.12.31) 기준을 따릅니다.<br>위도 경도 기준 일사량은 나사 위성 자료를 기반으로 산출되었습니다.<br>
+          <b>4.</b> ZEB등급,녹색건축물등급에 따른 감면율은 공공기관 정보를 바탕으로 작성되었습니다.<br>
+          <b>5.</b> 절세율은 중복되지 않으며, 결과의 감면율은 두 인증 등급의 감면율 중 높은 것으로 나타납니다.<br>
           <b>6.</b> 재산세 감면액은 지자체 조례에 따라 달라질 수 있습니다.
         `,
         icon: 'info',
         confirmButtonText: '닫기',
+        customClass: {
+          htmlContainer: 'swal-text'     
+        },
         focusConfirm: false,
         scrollbarPadding: false,
         heightAuto: false,  
@@ -45,16 +52,19 @@ Swal.fire({
       Swal.fire({
         title: '태양광 에너지 효율 경제성 시뮬레이터 참고사항',
         html: `
-          <b>1.</b> 해당 결과는 주소, 건물면적, 위도 경도 기준 일사량, 태양광 패널 정격 출력, 에너지 효율 등급 기준을 바탕으로 작성 되었습니다.<br><br>
-          <b>2.</b> 태양광 패널의 발전 효율 상수는 0.8로 책정되었습니다.<br> 일반적인 태양광 패널 발전 효율은 0.75~0.85 사이입니다.<br><br>
-          <b>3.</b> 에너지 효율 등급은 국토교통부 고시 제2021-1405호(2021.12.31) 기준을 따릅니다.<br>위도 경도 기준 일사량은 나사 위성 자료를 기반으로 산출되었습니다.<br><br>
-          <b>4.</b> 건축물 에너지 효율 등급 증가에 대한 에너지량은 에너지 등급 구간별 중간값으로 책정되었습니다.<br><br>
-          <b>5.</b> 전기금액은 24년도 한국전력공사 표준 전기세 기준입니다.(kWh당 185.5원)<br><br>
+          <b>1.</b> 해당 결과는 주소, 건물면적, 위도 경도 기준 일사량, 태양광 패널 정격 출력, 에너지 효율 등급 기준을 바탕으로 작성 되었습니다.<br>
+          <b>2.</b> 태양광 패널의 발전 효율 상수는 0.8로 책정되었습니다.<br> 일반적인 태양광 패널 발전 효율은 0.75~0.85 사이입니다.<br>
+          <b>3.</b> 에너지 효율 등급은 국토교통부 고시 제2021-1405호(2021.12.31) 기준을 따릅니다.<br>위도 경도 기준 일사량은 나사 위성 자료를 기반으로 산출되었습니다.<br>
+          <b>4.</b> 건축물 에너지 효율 등급 증가에 대한 에너지량은 에너지 등급 구간별 중간값으로 책정되었습니다.<br>
+          <b>5.</b> 전기금액은 24년도 한국전력공사 표준 전기세 기준입니다.(kWh당 185.5원)<br>
           <b>6.</b> 탄소배출량은 24년도 국가별 탄소배출계수 기준입니다.(kWh당 0.419)
           
         `,
         icon: 'info',
         confirmButtonText: '닫기',
+         customClass: {
+          htmlContainer: 'swal-text'     
+        },
         focusConfirm: false,
         scrollbarPadding: false,
         heightAuto: false,  
@@ -66,11 +76,11 @@ Swal.fire({
 
 //에너지 등급 시뮬레이터
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('simulatorForm1');
-    if (!form) return;
+    const form1 = document.getElementById('simulatorForm1');
+    if (!form1) return;
     
 
-    form.addEventListener('submit', async (e) => {
+    form1.addEventListener('submit', async (e) => {
         e.preventDefault();
         const box = document.getElementById('resultBox1');
         const items = box.querySelectorAll('.result-item');
@@ -79,15 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const box5 = document.getElementById("intensityChart3");
         const box2 = document.getElementById('compareText');
         if (!box3) return;
-    
-        
 
-        const formData = new FormData(form);
+
+        const formData = new FormData(form1);
         const resp = await fetch('/simulate1', {
           method: 'POST',
           body: formData
         });
         const data = await resp.json();
+        window.simulatorData1=data;
         
         if (!box) return;
       
@@ -102,28 +112,29 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('renewableSupport').textContent = data.renewableSupport ?? '-';
         document.getElementById('zebGrade').textContent = data.zebGrade ?? '-';   
 
-       
+        
+        // sendAiSummary(data)
         box.style.display='block';
         box2.style.display='block';
         box3.style.display='block';
         box4.style.display='block';
         box5.style.display='block';
-      
-        
+        runCompare();
+        document.getElementById('aiSummaryBtn').style.display = 'block';
       
         items.forEach((item, index) => {
           setTimeout(() => item.classList.add('show'), index * 300);
         });
     });
-});
-//태양광 시뮬레이터
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('simulatorForm2');
-    if (!form) return;
 
-    form.addEventListener('submit', async (e) => {
+
+
+    const form2 = document.getElementById('simulatorForm2');
+    if (!form2) return;
+
+    form2.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
+        const formData = new FormData(form2);
 
         const resp = await fetch('/simulate2', {
           method: 'POST',
@@ -131,38 +142,213 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await resp.json();
 
+        window.simulatorData2=data;
+
         const box = document.getElementById('resultBox2');
-        if (!box) return;
-        const box3 = document.getElementById("intensityChart1");
-        const box4 = document.getElementById("intensityChart2");
-        const box5 = document.getElementById("intensityChart3");
-        if (!box3) return;
+        if (!box) return;     
         const box2 = document.getElementById('compareText');
-     
+        const box6 = document.getElementById("solarEfficiencyChart");
         const items = box.querySelectorAll('.result-item');
+        
         items.forEach(item => item.classList.remove('show'));
 
-      
+        document.getElementById('solarRadiation').value = data.solarRadiation;
+        document.getElementById('onePanelGeneration').value = data.onePanelGeneration;
+        document.getElementById('onePanelGeneForChart').value = data.onePanelGeneForChart;
+        document.getElementById('onePanelCO2').value = data.onePanelCO2;
+        document.getElementById('onePanelSaveElectric').value = data.onePanelSaveElectric;
+        document.getElementById('daySolar').value = data.daySolar;
+        document.getElementById('roadAddr').textContent = data.roadAddr;
         animateValue("total", 0, data.total, 2000, 0);
         animateValue("annualSaveElectric", 0, data.annualSaveElectric, 2000, 0);
         animateValue("annualSaveCO2", 0, data.annualSaveCO2, 2000, 1);
         animateValue("requiredPanels", 0, data.requiredPanels, 2000, 0);
-
-
+        
+        
+        // sendAiSummary(data)
+        console.log("data",data)
         box.style.display = 'block';
         box2.style.display='block'
-        box3.style.display = 'block';
-        box4.style.display = 'block';
-        box5.style.display = 'block';
-        
-        
+        box6.style.display = 'block';
+        addNewResultToChart()
+        document.getElementById('aiSummaryBtn').style.display = 'block';
 
       
         items.forEach((item, index) => {
           setTimeout(() => item.classList.add('show'), index * 300);
         });
     });
+
+
+const aiBtn = document.getElementById("aiSummaryBtn");
+
+  aiBtn.addEventListener("click", async () => {
+
+    const leftResult = window.simulatorData1 || null;  
+    const rightResult = window.simulatorData2 || null; 
+
+  
+    let prompt = "";
+
+    if (leftResult && rightResult) {
+      prompt = `
+        이 시뮬레이터는 건물의 에너지 효율 등급을 평가하고, 
+        태양광 패널을 설치했을 때 목표 등급에 도달하기 위해 필요한 패널 수와 
+        그에 따른 경제적·환경적 효과를 분석하기 위한 시스템입니다.
+
+        시뮬레이션의 기본 흐름은 다음과 같습니다:
+        1. [에너지 효율 시뮬레이터]는 건물의 주소, 면적, 위도·경도, 에너지 사용량, 태양광 패널 정격 출력, 
+          에너지 효율 등급 기준 등을 바탕으로 현재 건물의 등급과 세제 감면율을 산출합니다.
+        2. [태양광 경제성 시뮬레이터]는 사용자가 에너지 효율 시뮬레이터에서 검색한 현재등급에서 "현재 등급 → 목표 등급" 구간을 바탕으로,
+          목표 등급을 달성하기 위해 필요한 태양광 패널 수를 계산하고, 
+          예상 발전량, 절약 전기량, 탄소 절감량, 절세 효과 등을 분석합니다.
+        3. 이 두 결과를 종합하여, 태양광 설치 전후의 에너지 자립률 변화, 
+          세제 인센티브, 환경적 개선 효과를 비교·평가합니다.
+
+        
+        실제계산은 이 기준으로 합니다:
+        패널 규격: 2.2 ㎡ / 500 Wp(=0.5 kW) / 장
+        설치 필요 면적(간격 포함): 패널 면적 x 1.8 = 3.96 ㎡/장
+        패널 단가: 400,000원/장
+        설치비(시공): 100,000원/장
+        전력요금: 185.5 원/kWh
+        전력 배출계수: 0.415 kgCO₂/kWh
+        발전 효율 상수: 0.8
+
+        데이터 항목 설명:
+        - solarradiation: 태양광 일사량  
+        - onePanelGeneration: 패널 1개당 연간 발전량  
+        - onePanelCO2: 패널 1개당 연간 CO₂ 절감량  
+        - annualSaveElectric: 연간 절감 전기세(만원)  
+        - annualSaveCO2: 연간 절감 CO₂량(ton)  
+        - total: 연간 절감 전기에너지량(kWh)
+        - requiredPanels: 목표 등급 달성을 위한 필요한 패널 수  
+        - propertyTax / acquireTax / areaBonus / certificationDiscount: 재산세/소득세/용적률증가/인증비용감면율
+        - grade / zebGrade: 에너지 효율 등급 및 ZEB 등급  
+        - energySelf: 에너지 자립률(%)  
+        - category: 건물 유형 (예: 공장, 병원, 창고 등)
+
+        ---
+
+        결과는 반드시 다음의 3단 구조로 서술해주세요:
+        ① 현재 상태 분석 — 건물의 에너지 효율, 자립률, 등급, 절세 현황  
+        ② 목표 등급 달성을 위한 태양광 시나리오 — 필요한 패널 수, 절감량, CO₂ 저감 효과, 경제성  
+        ③ 종합 평가 — 환경적·경제적 개선 효과, 등급 상승 가능성, 지속 가능성 관점 요약
+
+        추가 지침:
+        - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 15~25줄 내외로 서술해주세요.
+        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 그 점을 고려하여 작성해주세요.
+        - 에너지 효율등급은 1+++,1++,1+,1,2,3,4,5,6,7등급까지 존재합니다.예를들어 1등급은 사실상 10개중 4번째 등급이므로 중간에위치한 등급임을 인지하고 설명해주세요
+        - 문단 구분은 하되, 문단 번호 제외한 기호는 삼가해주세요. 
+        - 데이터 간의 관계와 의미를 분석하되, 단순 수치 나열보다 "개선 인사이트"에 초점을 맞춰주세요.  
+        - 주요 수치(예: 절감량, 등급, 감면율 등)는 문장 안에 자연스럽게 포함시켜주세요.  
+        - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 흐름 중심으로,  
+          하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요.
+        - 계산 기준을 가지고 이 건물의 최대 태양광 설치 가능 개수같은 수치적 접근을 해주세요
+
+        [왼쪽 결과]
+        ${JSON.stringify(leftResult)}
+
+        [오른쪽 결과]
+        ${JSON.stringify(rightResult)}
+              `;
+    } 
+    else if (leftResult) {
+      prompt = `
+        이 시뮬레이터는 건물의 에너지 효율 등급을 평가하기 위한 시스템으로,
+        입력된 주소, 면적, 위도·경도, 에너지 사용량, 태양광 패널 정격 출력, 
+        에너지 효율 기준을 바탕으로 현재 상태의 등급 및 절세 가능성을 분석합니다.
+
+       실제계산은 이 기준으로 합니다:
+        패널 규격: 2.2 ㎡ / 500 Wp(=0.5 kW) / 장
+        설치 필요 면적(간격 포함): 패널 면적 x 1.8 = 3.96 ㎡/장
+        패널 단가: 400,000원/장
+        설치비(시공): 100,000원/장
+        전력요금: 185.5 원/kWh
+        전력 배출계수: 0.415 kgCO₂/kWh
+        발전 효율 상수: 0.8
+
+        결과는 다음 3단 구조로 작성하세요:
+        ① 현재 상태 분석 — 건물의 등급, 자립률, 절세 현황  
+        ② 개선 필요성 — 태양광 설치 또는 효율 개선을 통한 잠재 효과  
+        ③ 종합 평가 — 향후 절감, 환경 개선, 정책 연계 가능성  
+
+        추가 지침:
+        - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 10~15줄 내외로 서술해주세요.
+        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 몰라서 입력을 안했거나, 0개일수도있다는 두가지 가정을 고려하여 작성해주세요.
+        - 에너지 효율등급은 1+++,1++,1+,1,2,3,4,5,6,7등급까지 존재합니다.예를들어 1등급은 사실상 10개중 4번째 등급이므로 중간에위치한 등급임을 인지하고 설명해주세요
+        - 문단 구분은 하되, 문단 번호 제외한 기호는 삼가해주세요. 
+        - 데이터 간의 관계와 의미를 분석하되, 단순 수치 나열보다 "개선 인사이트"에 초점을 맞춰주세요.  
+        - 주요 수치(예: 절감량, 등급, 감면율 등)는 문장 안에 자연스럽게 포함시켜주세요.  
+        - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 비교 중심으로,  
+          하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요.  
+        - 계산 기준을 가지고 이 건물의 최대 태양광 설치 가능 개수같은 수치적 접근을 해주세요
+
+        [왼쪽 결과]
+
+        ${JSON.stringify(leftResult)}
+              `;
+            } 
+            else if (rightResult) {
+              prompt = `
+        이 시뮬레이터는 사용자가 지정한 "현재 등급 → 목표 등급" 구간에 따라, 
+        해당 목표를 달성하기 위해 필요한 태양광 패널 수, 
+        에너지 절감 효과, 탄소 절감량, 경제적 효과를 분석하는 시스템입니다.
+
+        실제계산은 이 기준으로 합니다:
+        패널 규격: 2.2 ㎡ / 500 Wp(=0.5 kW) / 장
+        설치 필요 면적(간격 포함): 패널 면적 x 1.8 = 3.96 ㎡/장
+        패널 단가: 400,000원/장
+        설치비(시공): 100,000원/장
+        전력요금: 185.5 원/kWh
+        전력 배출계수: 0.415 kgCO₂/kWh
+        발전 효율 상수: 0.8
+
+        결과는 다음 3단 구조로 작성하세요:
+        ① 목표 등급 분석 — 설정된 목표의 의미와 달성 기준  
+        ② 필요한 태양광 규모 — 패널 수, 발전량, 절감량, CO₂ 저감 효과  
+        ③ 종합 평가 — 경제성, 환경 기여, 설치 타당성 및 정책적 시사점  
+
+        추가 지침:
+        - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 10~15줄 내외로 서술해주세요.
+        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 몰라서 입력을 안했거나, 0개일수도있다는 두가지 가정을 고려하여 작성해주세요.
+        - 문단 구분은 하되, 문단 번호 제외한 기호는 삼가해주세요. 
+        - 데이터 간의 관계와 의미를 분석하되, 단순 수치 나열보다 "개선 인사이트"에 초점을 맞춰주세요.  
+        - 주요 수치(예: 절감량, 등급, 감면율 등)는 문장 안에 자연스럽게 포함시켜주세요.  
+        - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 비교 중심으로,  
+          하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요. 
+        - 계산 기준을 가지고 이 건물의 최대 태양광 설치 가능 개수같은 수치적 접근을 여러가지로 해주세요
+
+        [오른쪽 결과]
+        ${JSON.stringify(rightResult)}
+              `;
+    } 
+    else {
+      alert("아직 시뮬레이터 결과가 없습니다.");
+      return;
+    }
+
+    const aiResult = document.getElementById("aiResult");
+    aiResult.textContent = " AI 분석 중입니다... 잠시만 기다려주세요.";
+
+
+    const resp = await fetch("/ai/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: prompt })
+    });
+
+    const data = await resp.json();
+    aiResult.textContent = data.reply;
+    aiResult.classList.add("show");
+    aiResult.textContent = data.reply.trim();
+
+    setTimeout(() => {
+      aiResult.classList.add("show");
+    }, 100);
+  });
 });
+
 
 // 빌딩에어리어 가져오기
 document.addEventListener("DOMContentLoaded", () => {
@@ -202,6 +388,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// 아이디로 왼쪽 오른쪽 분기하기
+let lastTriggeredSimulator = null;
+
+document.getElementById('juso1').addEventListener('focus', () => {
+  lastTriggeredSimulator = 'left';
+});
+
+document.getElementById('juso2').addEventListener('focus', () => {
+  lastTriggeredSimulator = 'right';
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   const searchBoxes = document.querySelectorAll(".searchBox");
 
@@ -223,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
       list.forEach(addr => {
         const item = document.createElement("div");
         item.classList.add("dropdown-item");
-        // item.textContent = addr.roadAddr;
+       
         
         const left = document.createElement("div");
         left.className = "addr-left";
@@ -325,14 +522,23 @@ document.addEventListener("DOMContentLoaded", () => {
                         console.error("건물정보 API 오류:", error);
                       }
                     });
+
+
+                    
+
+
                     fetch(`/simulator/${encodeURIComponent(pnu)}`)
                         .then(r => r.ok ? r.json() : null)
                         .then( data => {
                           if (!data) return;
 
-                          const energyInput = document.querySelector('#energy1');
-                          
-                          if (energyInput) energyInput.value = data.electricityUsageKwh;
+                          if (lastTriggeredSimulator === 'left') {
+                            const energyInput = document.querySelector('#energy1');
+                            if (energyInput) energyInput.value = data.electricityUsageKwh;
+                            console.log('왼쪽에서 실행됨  energy1 값 세팅됨');
+                          } else {
+                            console.log('오른쪽에서 실행됨  energy1 무시됨');
+                          }
 
                           const cat = data.buildingType2;
                           const category1 = document.querySelector('#category1');
@@ -348,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
                           if(eik2) eik2.value = eik;
                           console.log("eik : ",eik)
                           
-
+                          // 에버리지
                     fetch(`/energy/avg-intensity?category=${encodeURIComponent(cat)}`)
                         .then(r => r.ok ? r.json() : null)
                         .then(average => {
@@ -359,7 +565,36 @@ document.addEventListener("DOMContentLoaded", () => {
                           const avgEl2 = document.querySelector('#average2');
                           if (avgEl2) avgEl2.value = average;
                           console.log("average : ",average);
-                          runCompare();
+                         
+                        });
+                        //상위 몇퍼센트인지 알아보기
+                    fetch(`/energy/percentile?category=${encodeURIComponent(cat)}&value=${eik}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(percentile => {
+                          if (percentile == null) return;
+                          
+                          const percent = document.querySelector('#percent');
+                          percent.value = percentile;
+                          console.log("상위"+percent.value+"%");
+                        });
+                    // 선택 건물 퍼센트 가져오기
+                    fetch(`/energy/monthly-percent/pnu?pnu=${encodeURIComponent(pnu)}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => {
+                          if (!data) return;
+                          const BM = document.querySelector('#buildingMonthly')
+                          BM.value = JSON.stringify(data);
+                          console.log("선택건물 월별비중:", data);
+                        });
+
+                    // 카테고리 평균 퍼센트 가져오기
+                    fetch(`/energy/monthly-percent/category?category=${encodeURIComponent(cat)}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => {
+                          if (!data) return;
+                          const CM = document.querySelector('#categoryMonthly');
+                          CM.value = JSON.stringify(data);
+                          console.log("비교군 월별비중:", data);
                         });
                                               })
                         .catch(console.error);
@@ -431,8 +666,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       // png 생성
-      const dataUrl = await h2i.toPng(el, {
-        pixelRatio: 1.5,
+      const dataUrl = await h2i.toJpeg(el, {
+        pixelRatio: 1,
         cacheBust: true,
         backgroundColor: "#ffffff",
         useCORS: true
@@ -452,13 +687,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let hLeft = imgH;
         let pos = 0;
 
-        pdf.addImage(img, "PNG", 0, pos, imgW, imgH);
+        pdf.addImage(img, "JPEG", 0, pos, imgW, imgH);
         hLeft -= pdfH;
 
         while (hLeft > 0) {
           pos = hLeft - imgH;
           pdf.addPage();
-          pdf.addImage(img, "PNG", 0, pos, imgW, imgH);
+          pdf.addImage(img, "JPEG", 0, pos, imgW, imgH);
           hLeft -= pdfH;
         }
         const timestamp=getTimestamp();
@@ -532,8 +767,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
     try {
-      const dataUrl = await h2i.toPng(el, {
-        pixelRatio: 2,
+      const dataUrl = await h2i.toJpeg(el, {
+        pixelRatio: 1,
         cacheBust: true,
         backgroundColor: "#ffffff",
         useCORS: true
@@ -552,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const imgW = pdfW;
           const imgH = (img2.height * pdfW) / img2.width;
 
-          pdf2.addImage(img2, "PNG", 0, 0, imgW, imgH);
+          pdf2.addImage(img2, "JPEG", 0, 0, imgW, imgH);
           const blob2 = pdf2.output("blob");
           resolve(blob2);
         };
@@ -638,9 +873,79 @@ document.addEventListener('DOMContentLoaded', async () => {
       const avgEl2 = document.querySelector('#average2');
       if (avgEl2) avgEl2.value = average;
       console.log("average : ",average);
-      runCompare();
-      
     });
+
+    const eik = data.energyIntensityKwhPerM2;
+    const eik1 = document.querySelector('#eik1');
+    if(eik1) eik1.value = eik;
+    const eik2 = document.querySelector('#eik2');
+    if(eik2) eik2.value = eik;
+    console.log("eik : ",eik)
+    fetch(`/energy/percentile?category=${encodeURIComponent(cat)}&value=${eik}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(percentile => {
+        if (percentile == null) return;
+        
+        const percent = document.querySelector('#percent');
+        percent.value = percentile;
+        console.log("상위"+percent.value+"%");
+      });
+  // 선택 건물 퍼센트 가져오기
+  fetch(`/energy/monthly-percent/pnu?pnu=${encodeURIComponent(pnu)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const BM = document.querySelector('#buildingMonthly')
+        BM.value = JSON.stringify(data);
+        console.log("선택건물 월별비중:", data);
+      });
+
+  // 카테고리 평균 퍼센트 가져오기
+  fetch(`/energy/monthly-percent/category?category=${encodeURIComponent(cat)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const CM = document.querySelector('#categoryMonthly');
+        CM.value = JSON.stringify(data);
+        console.log("비교군 월별비중:", data);
+      });
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const currentSelect = document.querySelector('select[name="currentGrade"]');
+  const targetSelect = document.querySelector('select[name="targetGrade"]');
+
+  
+  currentSelect.addEventListener('change', () => {
+    const currentValue = parseInt(currentSelect.value);
+    const targetOptions = targetSelect.querySelectorAll('option');
+
+    targetOptions.forEach(option => {
+      const targetValue = parseInt(option.value);
+
+     
+      if (isNaN(targetValue) || targetValue === 0) {
+        option.disabled = false;
+        option.style.display = '';
+      } else if (targetValue >= currentValue) {
+      
+        option.disabled = true;
+        option.style.display = 'none';
+      } else {
+      
+        option.disabled = false;
+        option.style.display = '';
+      }
+    });
+
+ 
+    if (parseInt(targetSelect.value) <= currentValue) {
+      targetSelect.value = 0;
+    }
+  });
+
+  
 });
 
 

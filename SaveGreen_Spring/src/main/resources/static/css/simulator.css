@@ -376,18 +376,140 @@ body.swal2-shown {
   z-index: 9999;             
 }
 
-#intensityChart1{
+
+
+#solarEfficiencyChart{
     width : 1000px;
-    height : 480px;
+    height : 500px;
+    margin: 0 auto; 
+
+}
+
+.swal-text {
+  text-align: left !important;
+  line-height: 1.6;
+  font-size: 17px;
+}
+
+
+.swal-text h4 {
+  text-align: center !important;
+  color: #1976D2;
+  font-weight: 700;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  font-size: 25px;
+}
+.card-year{
+    font-size:24px;
+}
+
+
+.ai-summary-container {
+  text-align: center;
+  margin-top: 40px;
+}
+
+#aiSummaryBtn {
+  display: none; 
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(145deg, #66bb6a, #388e3c);
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+#aiSummaryBtn:hover {
+  background: linear-gradient(145deg, #81c784, #43a047);
+  transform: translateX(-50%) scale(1.05);
+}
+
+#aiResult {
+  margin: 40px auto;                 
+  background: #ffffff;
+  border: 2px solid #a5d6a7;         
+  border-left: 8px solid #66bb6a;    
+  border-radius: 15px;
+  padding: 28px 36px;             
+  max-width: 900px;                
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: "Pretendard", sans-serif;
+  line-height: 1.8;
+  color: #053308;
+  white-space: pre-line;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+
+#aiResult.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+#aiResult::before {
+  content: " AI 분석 결과";
+  display: block;
+  font-weight: 700;
+  font-size: 20px;
+  color: #2e7d32;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #a5d6a7;
+  padding-bottom: 6px;
+  text-align: center;
+}
+
+.chart-container {
+  margin-top: 30px;
+}
+
+.chart-container canvas {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+}
+#intensityChart1{
+    width : 450px !important;
+    height : 260px !important;
     margin: 0 auto; 
 }
 #intensityChart2{
-    width : 1000px;
-    height : 480px;
+    width : 450px ;
+    height : 300px !important; 
     margin: 0 auto; 
 }
 #intensityChart3{
     width : 1000px;
-    height : 480px;
+    height : 400px;
     margin: 0 auto; 
+}
+.up-chart {
+  display: flex;             
+  justify-content: center;    
+  gap: 40px;                
+  margin-bottom: 40px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;          
+}
+
+.down-chart {
+  display: flex;
+  justify-content: center;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 }

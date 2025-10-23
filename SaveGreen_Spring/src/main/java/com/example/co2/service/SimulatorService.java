@@ -31,7 +31,6 @@ public class SimulatorService {
     public SimulatorResultDto calculate1(SimulatorDto dto) throws Exception {
         SimulatorResultDto res = new SimulatorResultDto();
         
-
         BigDecimal annualUsage = dto.getEnergy();
         BigDecimal solarRadiation = getSolarRadiation(dto.getLat(),dto.getLon());
         System.out.println(dto.getLat()+","+dto.getLon());
@@ -41,18 +40,12 @@ public class SimulatorService {
         BigDecimal panelPower = panelPowerInt == null ? BigDecimal.ZERO : BigDecimal.valueOf(panelPowerInt);
         BigDecimal panelCount = panelCountInt == null ? BigDecimal.ZERO : BigDecimal.valueOf(panelCountInt);
         BigDecimal generation = solarRadiation.multiply(efficiency).multiply(panelPower).multiply(panelCount).divide(BigDecimal.valueOf(1000));
+        
         BigDecimal energySelf = generation.divide(annualUsage,3,RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
         System.out.println("generation = " + generation);
         System.out.println("energySelf = " + energySelf);
-        BigDecimal usage = (dto.getEnergy().subtract(generation)).divide(dto.getArea(),3,RoundingMode.HALF_UP); // 소수점 3자리 반올림
+        BigDecimal usage = (dto.getEnergy().subtract(generation)).max(BigDecimal.ZERO).divide(dto.getArea(),3,RoundingMode.HALF_UP); // 소수점 3자리 반올림
         System.out.println("usage = " + usage);
-
-       
-
-
-
-
-
 
         ZebPolicy z = zebPolicyRepository
         .findFirstByMinPercentLessThanEqualAndMaxPercentGreaterThanEqual(energySelf, energySelf)
@@ -107,7 +100,9 @@ public class SimulatorService {
         Integer panelPowerInt = dto.getPanelPower();
         BigDecimal panelPower = panelPowerInt == null ? BigDecimal.ZERO : BigDecimal.valueOf(panelPowerInt);
 
-         Map<Integer,int[]> gradeRange = new HashMap<>();
+        
+
+        Map<Integer,int[]> gradeRange = new HashMap<>();
         gradeRange.put(1, new int[]{0, 80});
         gradeRange.put(2, new int[]{80, 140});
         gradeRange.put(3, new int[]{140, 200});
@@ -123,7 +118,7 @@ public class SimulatorService {
         int targetGrade = dto.getTargetGrade();
         BigDecimal currentMid = BigDecimal.ZERO;
         BigDecimal targetMid = BigDecimal.ZERO;
-
+        String roadAddr = dto.getRoadAddr();
         
         if (gradeRange.containsKey(currentGrade)) {
             int[] range = gradeRange.get(currentGrade);
@@ -137,7 +132,7 @@ public class SimulatorService {
         BigDecimal energyDiff = currentMid.subtract(targetMid);
         BigDecimal totalEnergyDiff = energyDiff.multiply(dto.getArea());
         
-        BigDecimal onePanelGeneration = panelPower.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP)
+        BigDecimal onePanelGeneration = panelPower.divide(BigDecimal.valueOf(1000), 1, RoundingMode.HALF_UP)
                 .multiply(solarRadiation)
                 .multiply(efficiency);
 
@@ -152,18 +147,36 @@ public class SimulatorService {
                                             .divide(BigDecimal.valueOf(10000),1,RoundingMode.HALF_UP); // kWh
         BigDecimal annualSaveCO2 = total.multiply(BigDecimal.valueOf(0.415))
                                         .divide(BigDecimal.valueOf(1000),1,RoundingMode.HALF_UP); // TonCO2
-
+        BigDecimal onePanelCO2 = onePanelGeneration.multiply(BigDecimal.valueOf(0.415)).divide(BigDecimal.valueOf(100),3,RoundingMode.HALF_UP);
+        BigDecimal onePanelSaveElectric = onePanelGeneration.multiply(BigDecimal.valueOf(185.5)).divide(BigDecimal.valueOf(10000),3,RoundingMode.HALF_UP);
+        BigDecimal daySolar = solarRadiation.divide(BigDecimal.valueOf(366),3,RoundingMode.HALF_UP);
+        BigDecimal onePanelGeneForChart = onePanelGeneration.divide(BigDecimal.valueOf(100));
 
         System.out.println("annualSaveElectric = " + annualSaveElectric);
         System.out.println("annualSaveCO2 = " + annualSaveCO2);
         System.out.println("requiredPanels = " + requiredPanels);
         System.out.println("total = " + total);
+        System.out.println("onePanelGeneration"+onePanelGeneration);
+        System.out.println("onePanelGeneForChart"+onePanelGeneForChart);
+        System.out.println("SolarRadiation"+solarRadiation);
+        System.out.println("onepanelco2"+onePanelCO2);
+        System.out.println("onepanelsaveelectric"+onePanelSaveElectric);
+        System.out.println("daySolar"+daySolar);
+        System.out.println(roadAddr);
 
+        res.setDaySolar(daySolar);
+        res.setOnePanelCO2(onePanelCO2);
+        res.setOnePanelSaveElectric(onePanelSaveElectric);
+        res.setOnePanelGeneration(onePanelGeneration);
+        res.setOnePanelGeneForChart(onePanelGeneForChart);
+        res.setSolarRadiation(solarRadiation);
         res.setAnnualSaveElectric(annualSaveElectric);
         res.setAnnualSaveCO2(annualSaveCO2);
         res.setTotal(total);
         res.setRequiredPanels(requiredPanels);
+        res.setRoadAddr(roadAddr);
 
+        
 
         return res;
     }

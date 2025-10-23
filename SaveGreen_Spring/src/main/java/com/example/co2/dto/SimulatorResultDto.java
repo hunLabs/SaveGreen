@@ -24,4 +24,11 @@ public class SimulatorResultDto {
     private BigDecimal annualSaveElectric;
     private BigDecimal annualSaveCO2;
     private BigDecimal total;
+    private BigDecimal solarRadiation;
+    private BigDecimal onePanelGeneration;
+    private BigDecimal onePanelCO2;
+    private BigDecimal onePanelSaveElectric;
+    private BigDecimal daySolar;
+    private BigDecimal onePanelGeneForChart;
+    private String roadAddr;
 }

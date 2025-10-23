@@ -1,6 +1,8 @@
 package com.example.co2.service;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.io.ClassPathResource;
@@ -42,5 +44,28 @@ public class SearchBuildingJsonService {
         return null;
         
     }
-    
+    public List<Double> getMonthlyPercentByBuilding(String pnu) {
+        List<SearchBuilding> list = readAll();
+
+        for (SearchBuilding b : list) {
+            if (b == null) continue;
+            if (b.getPnu() == null) continue;
+            if (!b.getPnu().equals(pnu)) continue;
+            if (b.getMonthlyConsumption() == null) continue;
+
+            double total = b.getMonthlyConsumption().stream()
+                    .mapToDouble(m -> m.getElectricity())
+                    .sum();
+
+            List<Double> percents = new ArrayList<>();
+            for (var m : b.getMonthlyConsumption()) {
+                double pct = (m.getElectricity() / total) * 100.0;
+                percents.add(pct);
+            }
+
+            return percents; 
+        }
+
+        return Collections.emptyList(); 
+    }   
 }

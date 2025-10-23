@@ -33,6 +33,7 @@
     <input type="hidden" id="pnu" name="pnu">
     <input type="hidden" id="ldCodeNm" name="ldCodeNm">
     <input type="hidden" id="mnnmSlno" name="mnnmSlno">
+    <input type="hidden" id="addressInput" placeholder="addr" />
 
     <main class="service-container">
         <div id="vmap"></div>
@@ -57,11 +58,11 @@
         </div>
         <div class="popup-body">
             <h3 id="buildingName">-</h3>
-            <div class="addr">
+            <!-- <div class="addr">
                 <span class="tag">도로명</span> <span id="roadAddr">-</span><br>
                 <span class="tag">지번</span> <span id="jibunAddr">-</span><br>
                 <span class="tag">영문</span> <span id="engAddr">-</span>
-            </div>
+            </div> -->
             <table class="info-table">
                 <tr><th>건물명</th><td id="buldNm">-</td><th>건물동명</th><td id="buldDongNm">-</td></tr>
                 <tr><th>법정동명</th><td id="ldCodeNm">-</td><th>지번</th><td id="mnnmSlno">-</td></tr>
@@ -73,7 +74,7 @@
             </table>
         </div>
         <div class="popup-footer">
-            <button class="energy-btn">에너지 사용량 확인하기</button>
+            <button class="energy-btn" onclick="checkE()">에너지 사용량 확인하기</button>
         </div>
     </div>
 
