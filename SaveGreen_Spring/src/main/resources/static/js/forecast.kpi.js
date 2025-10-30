@@ -12,34 +12,47 @@
     // - 입력에 base(dae.json: {tariff, capexPerM2, savingPct})와 floorArea가 오면 이를 우선 사용
     // - series.saving/series.after가 있으면 그것을 우선 사용(데이터 일관성)
     function computeKpis({ years, series, cost, kpiFromApi, base, floorArea }) {
-        // 0) API KPI 사용 여부 스위치
-        if (USE_API_KPI && kpiFromApi && Number.isFinite(kpiFromApi.savingCostYr)) {
-            return kpiFromApi;
+        // 0) API KPI 사용 여부 스위치 (조건 완화: 세 항목 중 하나라도 오면 신뢰)
+        if (USE_API_KPI && kpiFromApi && (
+              kpiFromApi.savingPct != null ||
+              kpiFromApi.paybackYears != null ||
+              kpiFromApi.savingCostYr != null
+        )) {
+            return {
+                savingPct:    Number(kpiFromApi.savingPct ?? 0),
+                savingKwhYr:  Number(kpiFromApi.savingKwhYr ?? 0),
+                savingCostYr: Number(kpiFromApi.savingCostYr ?? 0),
+                paybackYears: Number(kpiFromApi.paybackYears ?? Infinity)
+            };
         }
 
         // 가장 마지막 연도의 지표로 계산
-        const i = Math.max(0, (Array.isArray(years) ? years.length : 0) - 1);
+        const i = 0;
 
         const afterKwhRaw  = Number(series?.after?.[i]  ?? 0);
         const savingKwhRaw = Number(series?.saving?.[i] ?? 0);
 
-        // 1) 데이터 기반으로 after/saving/before 정리
+        // 실측 기반으로 before 복원: before = after + saving
         let afterKwh  = Math.max(0, afterKwhRaw);
         let savingKwh = Math.max(0, savingKwhRaw);
         let beforeKwh = afterKwh + savingKwh;
 
-        // 2) base.savingPct가 있고 series.saving이 비었으면 base로 보정
-        //    - savingPct는 0~1(=13%면 0.13)로 가정
-        if ((!Number.isFinite(savingKwh) || savingKwh === 0) &&
+        // base.savingPct 보정은 '실측이 전혀 없을 때만' 제한적으로 사용
+        if ((!Number.isFinite(savingKwh) || savingKwh <= 0) &&
+            beforeKwh <= 0 &&
             base && Number.isFinite(base.savingPct) && base.savingPct > 0 && base.savingPct < 1) {
-
-            // beforeKwh가 0이면 after에서 역산: after = before * (1 - s) → before = after / (1 - s)
-            if (beforeKwh <= 0 && Number.isFinite(afterKwh)) {
+            // after만 있고 saving/before가 없을 때 역산
+            if (Number.isFinite(afterKwh) && afterKwh > 0) {
                 beforeKwh = Math.round(afterKwh / (1 - base.savingPct));
+                savingKwh = Math.max(0, beforeKwh - afterKwh);
             }
-            if (beforeKwh > 0) {
-                savingKwh = Math.round(beforeKwh * base.savingPct);
-            }
+        }
+
+        // 절감률(%) 1자리 반올림: savingPct = saving / before
+        let savingPctPct = 0;	// 퍼센트(%) 표기값
+        if (Number.isFinite(beforeKwh) && beforeKwh > 0) {
+        	const ratio = savingKwh / beforeKwh;     // 0~1
+        	savingPctPct = Math.round(ratio * 1000) / 10; // 소수 1자리(%) 반올림
         }
 
         // 3) 비용절감(연): 우선 API cost.saving[i], 없으면 base.tariff × savingKwh
@@ -84,26 +97,12 @@
         		const denom = Math.max(1, savingKwh);
         		paybackYears = (afterKwh / denom) * 0.8;
         	}
-
-        	// 보수적 표시 범위 고정
-        	paybackYears = clamp(paybackYears, 3, 8);
         }
-
-
 
         // 5) 절감률(%) = savingKwh / beforeKwh
         const savingPct = (beforeKwh > 0)
             ? Math.round((savingKwh / beforeKwh) * 100)
             : 0;
-
-        try {
-            // [교체] 멀티라인 요약(kv) 사용
-            SaveGreen.log.kv('kpi', 'kpi snapshot', {
-                savingPct,
-                savingCostYr: Math.round(savingCost),
-                paybackYears: Number((Math.round(paybackYears * 10) / 10).toFixed(1))
-            }, ['savingPct','savingCostYr','paybackYears']);
-        } catch {}
 
         return {
             savingCostYr: savingCost,   // 연간 비용 절감(원)
@@ -123,12 +122,12 @@
         let score = 0;
 
         // 1. 절감률
-        if (savingPct >= 15) score += 2;
+        if (savingPct >= 18) score += 2;
         else if (savingPct >= 10) score += 1;
 
         // 2. 회수기간
-        if (payback <= 5) score += 2;
-        else if (payback <= 8) score += 1;
+        if (payback <= 15) score += 2;
+        else if (payback <= 20) score += 1;
 
         // 3. 연식(없으면 중립 1점)
         let agePt = 1;
@@ -141,7 +140,7 @@
         score += agePt;
 
         // 가드
-		if (savingPct < 5 || payback > 12) {
+		if (savingPct < 5 || payback > 20) {
 			const status = 'not-recommend';
 			return { status, label: status, score };
 		}
@@ -152,7 +151,7 @@
 		return { status, label: status, score };
 	}
 
-	// [추가] ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
 	// KPI 도메인 보조 함수 3종 (IIFE 안쪽, decideStatusByScore 바로 아래에 배치)
 	// - main.js에 남아 있던 '순수 계산로직'을 본 KPI 모듈로 이관
 	// - DOM 접근/렌더링 없음(순수 함수) → 단위 테스트/재사용 용이
@@ -237,17 +236,17 @@
 		}
 		return null;
 	}
-	// [추가 끝] ───────────────────────────────────────────────────────────
+	// ───────────────────────────────────────────────────────────
 
 
-	// [수정] 전역/네임스페이스에 노출(기존 + KPI 네임스페이스 동시 제공)
+	// 전역/네임스페이스에 노출(기존 + KPI 네임스페이스 동시 제공)
 	window.computeKpis = computeKpis;
 	window.decideStatusByScore = decideStatusByScore;
 
 	window.SaveGreen.Forecast.computeKpis = computeKpis;
 	window.SaveGreen.Forecast.decideStatusByScore = decideStatusByScore;
 
-	// [추가] KPI 서브 네임스페이스로 순수 도메인 로직을 묶어서 노출
+	// KPI 서브 네임스페이스로 순수 도메인 로직을 묶어서 노출
 	window.SaveGreen.Forecast.KPI = Object.assign(
 		window.SaveGreen.Forecast.KPI || {},
 		{

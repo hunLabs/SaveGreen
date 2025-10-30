@@ -8,7 +8,7 @@
             "2) base = dae.types[mappedType].base 로 단가/투자비/절감률 주입",
             "3) KPI 계산: savingKwh, costSaving, paybackYears 산출 (formulas 적용)",
             "4) 등급/EUI 표시는 euiRules.mode 및 해당 임계값/밴드 적용",
-            "5) UI 표기(%)는 defaults의 소수값을 ×100 변환해 표시",
+            "5) UI 표기(%)는 defaults의 소수값을 x100 변환해 표시",
             "※ 가능하면 KPI는 백엔드 응답을 그대로 사용하고, FE 계산은 보조로만 사용"
         ],
         "notes": [
@@ -52,7 +52,7 @@
     },
 
     "defaults": {
-        "__comment": "프로젝트 전역 공통 상수(소수값). UI에 % 표기 시 ×100 변환.",
+        "__comment": "프로젝트 전역 공통 상수(소수값). UI에 % 표기 시 x100 변환.",
         "electricityEscalationPctPerYear": 0.03,
         "discountRate": 0.05,
         "maintenanceOpexAsPctOfCapex": 0.01,
@@ -93,10 +93,10 @@
             "notes": "공정부하 변동성 고려해 보수적 절감률.",
             "keywords": ["공장", "제조", "산단", "플랜트", "물류센터", "창고"],
             "base": {
-                "tariff": 140,
+                "tariff": 185.5,
                 "capexFixed": 30000000,
                 "capexFreeArea": 500,
-                "capexPerM2": 220000,
+                "capexPerM2": 110000,
                 "savingPct": 0.18
             }
         },
@@ -105,22 +105,22 @@
             "notes": "운영패턴 개선 여지로 절감률 상향.",
             "keywords": ["학교", "초등", "중학교", "고등학교", "대학교", "캠퍼스", "교육"],
             "base": {
-                "tariff": 130,
+                "tariff": 185.5,
                 "capexFixed": 25000000,
                 "capexFreeArea": 400,
-                "capexPerM2": 180000,
+                "capexPerM2": 80000,
                 "savingPct": 0.16
             }
         },
         "hospital": {
             "label": "병원/의료시설",
             "notes": "설비 복잡도/상시부하로 CAPEX·단가 상향.",
-            "keywords": ["병원", "의원", "메디컬", "요양", "클리닉"],
+            "keywords": ["병원", "의원", "메디컬", "요양", "클리닉", "종합병원"],
             "base": {
-                "tariff": 170,
+                "tariff": 185.5,
                 "capexFixed": 40000000,
                 "capexFreeArea": 300,
-                "capexPerM2": 260000,
+                "capexPerM2": 100000,
                 "savingPct": 0.17
             }
         },
@@ -129,10 +129,10 @@
             "notes": "일반 사무용 건물 기준. BEMS/조명/HVAC 리트로핏 가정.",
             "keywords": ["오피스", "사무", "본사", "오피스텔(비주거)", "행정", "공공청사"],
             "base": {
-                "tariff": 150,
+                "tariff": 185.5,
                 "capexFixed": 20000000,
                 "capexFreeArea": 300,
-                "capexPerM2": 200000,
+                "capexPerM2": 90000,
                 "savingPct": 0.15
             }
         }

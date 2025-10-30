@@ -4,10 +4,17 @@ function runCompare() {
     var avgEl1 = document.getElementById('average1');
     var avgEl2 = document.getElementById('average2');
     var percent = document.getElementById('percent');
+    const cate1 = document.getElementById('category1');
+    const cate2 = document.getElementById('category2');
+    
+    const cat1 = cate1.value;
+    const cat2 = cate2.value;
 
     console.log('runCompare 실행됨');
     console.log('Chart 객체:', window.Chart);
     console.log('캔버스들:', document.getElementById('intensityChart1'), document.getElementById('intensityChart2'), document.getElementById('intensityChart3'));
+    console.log("현재 BM:", document.querySelector('#buildingMonthly')?.value);
+    console.log("현재 CM:", document.querySelector('#categoryMonthly')?.value);
     console.log(percent);
     if (!eikEl1 && !eikEl2) return;
     if (!avgEl1 && !avgEl2) return;
@@ -31,8 +38,10 @@ function runCompare() {
     var avg = Number(avgStr);
     const BM = document.getElementById('buildingMonthly');
     const CM = document.getElementById('categoryMonthly');
+    console.log("서버 응답(raw):", BM.value, CM.value);
     BMlist = JSON.parse(BM.value);
     CMlist = JSON.parse(CM.value);
+    
     if(!BMlist||!CMlist){
         console.log('차트 빔');
         return;
@@ -57,7 +66,7 @@ function runCompare() {
     }
 
     console.log(avg,eik);
-    
+    console.log(cat1,cat2);
 
     //차트js
     var canvas1 = document.getElementById('intensityChart1');
@@ -73,8 +82,8 @@ function runCompare() {
             data: {
             labels: [''],
             datasets: [
-                { label: '선택', data: [eik] },
-                { label: '평균', data: [avg] }
+                { label: `선택된 건물`, data: [eik] },
+                { label: `평균(${cat1})`, data: [avg] }
             ]
             },
             options: {
@@ -82,7 +91,7 @@ function runCompare() {
                 plugins: { 
                     legend: { display: true },
                     title: { display: true,
-                            text: "단위면적당 에너지 사용량 비교" ,
+                            text: "단위면적(m²)당 에너지 사용량 비교" ,
                             font:{size:22},
                             color:'#333'}
                 },
@@ -103,7 +112,7 @@ function runCompare() {
             window.__intensityChart2 = new window.Chart(canvas2, {
             type: 'doughnut',
             data: {
-                labels: ['검색 건물'],
+                labels: ['선택된 건물'],
                 datasets: [{
                 data: [percent, 100 - percent],
                 backgroundColor: ['#1976D2', '#E0E0E0'],
@@ -129,11 +138,12 @@ function runCompare() {
                 afterDraw: chart => {
                 const {ctx, chartArea: {width, height}} = chart;
                 ctx.save();
-                ctx.font = 'bold 20px sans-serif';
+                ctx.font = 'bold 14px sans-serif';
                 ctx.fillStyle = '#333';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`선택 건물은 상위 ${percent}% 입니다`, width / 2, height / 2);
+                ctx.fillText(`선택 건물은 ${cat1}분류에서 상위 ${percent}% 입니다`, width / 2, height / 2);
+                
                 }
             }]
             });
@@ -159,7 +169,7 @@ function runCompare() {
             labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
             datasets: [
                 {
-                label: '선택 건물',
+                label: '선택된 건물',
                 data: BMlist,
                 borderColor: '#1976D2',
                 borderWidth: 2,
@@ -167,7 +177,7 @@ function runCompare() {
                 fill: false
                 },
                 {
-                label: '비교군 평균',
+                label: `${cat1} 평균`,
                 data: CMlist,
                 borderColor: '#E57373',
                 borderDash: [5, 5],
@@ -233,6 +243,7 @@ function addNewResultToChart() {
     const lat = Number(document.getElementById('lat2').value);
     const lon = Number(document.getElementById('lon2').value);
     const daySolar = Number(document.getElementById('daySolar').value);
+    
 
     const newData = {
         location: road,

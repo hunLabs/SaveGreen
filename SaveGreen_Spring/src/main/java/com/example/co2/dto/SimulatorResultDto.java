@@ -31,4 +31,8 @@ public class SimulatorResultDto {
     private BigDecimal daySolar;
     private BigDecimal onePanelGeneForChart;
     private String roadAddr;
+
+    private int currentGrade;
+    private int targetGrade;
+
 }

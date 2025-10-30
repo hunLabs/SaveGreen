@@ -13,15 +13,19 @@
 
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SAVE GREEN</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" th:href="@{/css/greenFinderMap.css}">
-  <script type="text/javascript" src="https://cesium.com/downloads/cesiumjs/releases/1.82/Build/Cesium/Cesium.js"></script>
-  <script type="text/javascript" src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=AED66EDE-3B3C-3034-AE11-9DBA47236C69"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAVE GREEN</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/greenFinderMap.css}">
+    <script type="text/javascript" src="https://cesium.com/downloads/cesiumjs/releases/1.82/Build/Cesium/Cesium.js"></script>
+    <script type="text/javascript" src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=AED66EDE-3B3C-3034-AE11-9DBA47236C69"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
 </head>
+
 <body>
 
     <!-- 헤더 -->
@@ -40,19 +44,30 @@
 
         <!-- 검색창 오버레이 -->
         <div class="search-container">
-            <input type="text" name="search" class="searchBox search-box" placeholder="도로명 주소 검색" >
+            <input type="text" name="search" class="searchBox search-box" autocomplete="off" placeholder="명칭 또는 주소 검색">
+            <img src="/img/search_icon.png" alt="검색 아이콘" class="search-icon" style="width: 15px; height: 15px;"/>
             <div class="searchResult"></div>
         </div>
 
         <!-- 팝업 (이미지로) -->
-        <div id="intro_popup" class="intro_popup">
-            <img src="/img/popup_guide.png" alt="팝업 가이드" />
+        <!-- <div id="intro_popup" class="intro_popup" name="popup1">       
             <button class="close-btn" onclick="closePopup()">X</button>
+        </div> -->
+        <div class="popup-overlay"></div>
+        
+        <div class="main_notice_pop" name="popup1" style="display:none;">    
+            <img src="/img/popup_img.png" alt="팝업 가이드" style="width: 100%;"/>
+            <a href="#" class="btn_close" data-popup="popup1">X</a> <br>
+            <div class="today_close1">
+                <input type="checkbox" name="today_close1" class="today_close1" /> 오늘만 이 창을 열지 않음
+            </div>
         </div>
+
+
     </main>
-  
+
     <div id="popup" class="popup">
-        <div class="popup-header">
+        <div id="popupHeader" class="popup-header" >
             <span>건축물정보</span>
             <button class="popup-close" onclick="hidePopup()">✕</button>
         </div>
@@ -60,27 +75,67 @@
             <h3 id="buildingName">-</h3>
             <!-- <div class="addr">
                 <span class="tag">도로명</span> <span id="roadAddr">-</span><br>
-                <span class="tag">지번</span> <span id="jibunAddr">-</span><br>
+                <span class="tag">지번</span> <span id="jibunAddr">-</span><br> 
                 <span class="tag">영문</span> <span id="engAddr">-</span>
             </div> -->
             <table class="info-table">
-                <tr><th>건물명</th><td id="buldNm">-</td><th>건물동명</th><td id="buldDongNm">-</td></tr>
-                <tr><th>법정동명</th><td id="ldCodeNm">-</td><th>지번</th><td id="mnnmSlno">-</td></tr>
-                <tr><th>지상층수</th><td id="groundFloorCo">-</td><th>지하층수</th><td id="undgrndFloorCo">-</td></tr>
-                <tr><th>건축면적</th><td id="buldBildngAr">-</td><th>대지면적</th><td id="buldPlotAr">-</td></tr>
-                <tr><th>건물높이</th><td id="buldHg">-</td><th>용도</th><td id="buldPrposClCodeNm">-</td></tr>
-                <tr><th>주용도</th><td id="mainPurpsClCodeNm">-</td><th>건축년도</th><td id="useConfmDe">-</td></tr>
-                <tr><th>세부용도</th><td id="detailPrposCodeNm">-</td><th>허가일자</th><td id="prmisnDe">-</td></tr>
+                <tr>
+                    <th>건물명</th>
+                    <td id="buldNm">-</td>
+                    <th>건물동명</th>
+                    <td id="buldDongNm">-</td>
+                </tr>
+                <tr>
+                    <th>법정동명</th>
+                    <td id="ldCodeNm">-</td>
+                    <th>지번</th>
+                    <td id="mnnmSlno">-</td>
+                </tr>
+                <tr>
+                    <th>지상층수</th>
+                    <td id="groundFloorCo">-</td>
+                    <th>지하층수</th>
+                    <td id="undgrndFloorCo">-</td>
+                </tr>
+                <tr>
+                    <th>건축면적</th>
+                    <td id="buldBildngAr">-</td>
+                    <th>대지면적</th>
+                    <td id="buldPlotAr">-</td>
+                </tr>
+                <tr>
+                    <th>건물높이</th>
+                    <td id="buldHg">-</td>
+                    <th>용도</th>
+                    <td id="buldPrposClCodeNm">-</td>
+                </tr>
+                <tr>
+                    <th>주용도</th>
+                    <td id="mainPurpsClCodeNm">-</td>
+                    <th>건축년도</th>
+                    <td id="useConfmDe">-</td>
+                </tr>
+                <tr>
+                    <th>세부용도</th>
+                    <td id="detailPrposCodeNm">-</td>
+                    <th>허가일자</th>
+                    <td id="prmisnDe">-</td>
+                </tr>
             </table>
         </div>
-        <div class="popup-footer">
-            <button class="energy-btn" onclick="checkE()">에너지 사용량 확인하기</button>
+        <div class="popup-footer" style="border-top: 1px solid #ddd;">
+            <button class="simulator-btn btn-style" onclick="simulater_move()">ENERGY SIMULATOR 이동</button>
+            <button class="remodeling-btn btn-style" onclick="remodelong_move()">ENERGY REMODELING 이동</button>
+            <button class="btn-style" onclick="checkE()">에너지 사용량 확인하기</button>
         </div>
+        
     </div>
 
 
-  <script th:src="@{/js/GreenFinderMap.js}"></script>
+    <script th:src="@{/js/GreenFinderMap.js}"></script>
 
 
 </body>
+<div th:replace="layouts/footer :: footer"></div>
+
 </html>

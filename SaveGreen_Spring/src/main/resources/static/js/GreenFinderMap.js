@@ -1,4 +1,3 @@
-
 // 초기 카메라/지도 설정
 
 // 우주에서 보는 지구 시점
@@ -161,7 +160,8 @@ function getBuildingInfo(pnu) {
         data: reqData,
         success: function (res) {
             console.log("건물 정보 응답:", res);
-
+            $(".info-table").show();       // 테이블 숨김
+            $(".popup-footer").show(); 
             if (res && res.buildingUses && res.buildingUses.field) {
                 const info = res.buildingUses.field[0];
                 const html = `
@@ -195,7 +195,11 @@ function getBuildingInfo(pnu) {
                 sessionStorage.setItem("jibunAddr", (info.ldCodeNm || '') + ' ' + (info.mnnmSlno || ''));
 
             } else {
-                showPopup(lastClickPosition, "조회된 건물 정보가 없습니다.");
+                $("#buildingName").text("조회된 건물 정보가 없습니다.");
+                $(".info-table").hide();       // 테이블 숨김
+                $(".popup-footer").hide();     // 버튼 영역 숨김
+                resolve(null);
+
             }
         },
         error: function (err) {
@@ -235,93 +239,146 @@ function showBuildingPopup(info, windowPosition) {
     popup.style.left = (windowPosition.x + 10) + "px";
     popup.style.top = (windowPosition.y - 10) + "px";
     popup.style.display = "block";
+
+    makePopupDraggable("popup", "popupHeader");
+
 }
 
+
+//팝업 드래그 기능
+function makePopupDraggable(popupId, headerId) {
+    const popup = document.getElementById(popupId);
+    const header = document.getElementById(headerId);
+
+    let offsetX = 0, offsetY = 0;
+    let isDragging = false;
+
+    header.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    offsetX = e.clientX - popup.offsetLeft;
+    offsetY = e.clientY - popup.offsetTop;
+    header.style.cursor = "grabbing";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    popup.style.left = `${e.clientX - offsetX}px`;
+    popup.style.top = `${e.clientY - offsetY}px`;
+    popup.style.transform = "none"; // 중앙정렬 해제
+    });
+
+    document.addEventListener("mouseup", () => {
+    isDragging = false;
+    header.style.cursor = "move";
+    });
+
+}
+
+
 function hidePopup() {
-    $id("popup").style.display = "none";
+    const popup = document.getElementById("popup");
+    if (!popup) return;
+    popup.style.display = "none";
 }
 
 //////////////////////
 //검색 -> 화면 이동 -> 팝업
+
 let currentMarker = null; //기존 마커를 제거하기 위해 전역 변수
 
 
 document.addEventListener("DOMContentLoaded", () => {
-	const searchBoxes = document.querySelectorAll(".searchBox");
+   const searchBoxes = document.querySelectorAll(".searchBox");
 
-	searchBoxes.forEach((input) => {
-		const resultList = input.parentElement.querySelector(".searchResult");
+   searchBoxes.forEach((input) => {
+      const resultList = input.parentElement.querySelector(".searchResult");
 
-		input.addEventListener("keyup", function () {
-			const keyword = input.value.trim();
-			if (keyword.length < 2) {
-				resultList.innerHTML = "";
-				resultList.classList.remove("show");
-				return;
-			}
+      input.addEventListener("keyup", function () {
+         const keyword = input.value.trim();
+         if (keyword.length < 2) {
+            resultList.innerHTML = "";
+            resultList.classList.remove("show");
+            return;
+         }
 
-			$.ajax({
-				url: "https://api.vworld.kr/req/search",
-				type: "GET",
-				dataType: "jsonp",
-				data: {
-					service: "search",
-					request: "search",
-					version: "2.0",
-					crs: "EPSG:4326",
-					size: 5,
-					page: 1,
-					query: keyword,
-					type: "place",
-					format: "json",
-					key: "AED66EDE-3B3C-3034-AE11-9DBA47236C69"
-				},
-				success: function (data) {
-					resultList.innerHTML = "";
-					const items = data.response?.result?.items || [];
+         $.ajax({
+            url: "https://api.vworld.kr/req/search",
+            type: "GET",
+            dataType: "jsonp",
+            data: {
+               service: "search",
+               request: "search",
+               version: "2.0",
+               crs: "EPSG:4326",
+               size: 5,
+               page: 1,
+               query: keyword,
+               type: "place",
+               format: "json",
+               key: "AED66EDE-3B3C-3034-AE11-9DBA47236C69"
+            },
+            success: function (data) {
+               resultList.innerHTML = "";
+               const items = data.response?.result?.items || [];
 
-					if (items.length === 0) {
-						resultList.innerHTML = "<div class='dropdown-item'>검색 결과가 없습니다.</div>";
-						resultList.classList.add("show");
-						return;
-					}
+               if (items.length === 0) {
+                  resultList.innerHTML = "<div class='dropdown-item'>검색 결과가 없습니다.</div>";
+                  resultList.classList.add("show");
+                  return;
+               }
 
-					items.forEach((item) => {
-						const road = item.address?.road || "-";
-						const parcel = item.address?.parcel || "-";
-						const lon = parseFloat(item.point?.x);
-						const lat = parseFloat(item.point?.y);
+                const uniqueItems = [];
+                const seenCoords = new Set();
 
-						const div = document.createElement("div");
-						div.classList.add("dropdown-item");
-						div.innerHTML = `
-							<b>${road}</b><br>
-							<span style="font-size: 12px; color: gray;">${parcel}</span>
-						`;
+                items.forEach(item => {
+                    const lon = item.point?.x;
+                    const lat = item.point?.y;
+                    const key = `${lon},${lat}`;
+                    
+                    if (!seenCoords.has(key)) {
+                        seenCoords.add(key); 
+                        uniqueItems.push(item);
+                    }
+                });
 
-						div.addEventListener("click", () => {
-							input.value = road !== "-" ? road : parcel;
-							resultList.innerHTML = "";
-							resultList.classList.remove("show");
+                uniqueItems.forEach((item) => {
+                    const name = item.title || item.name || ""; // place 이름
+                    const road = item.address?.road || "-";
+                    const parcel = item.address?.parcel || "-";
+                    const lon = parseFloat(item.point?.x);
+                    const lat = parseFloat(item.point?.y);
 
-							if (lon && lat) {
-								// 지도 이동
-								vwmoveTo(lon, lat, 500);
+                    const div = document.createElement("div");
+                    div.classList.add("dropdown-item");
+                    div.innerHTML = `
+                        <b>${name || road || parcel}</b><br>
+                        <span style="font-size: 12px; color: gray;">${road !== "-" ? road : parcel}</span>
+                    `;
 
-								// 기존 마커 제거
-								if (currentMarker) {
-									map.removeMarker(currentMarker);
-									currentMarker = null;
-								}
 
-								// 마커 생성
-								const marker = new vw.geom.Point(new vw.Coord(lon, lat));
+                  div.addEventListener("click", () => {
+                     input.value = road !== "-" ? road : parcel;
+                     resultList.innerHTML = "";
+                     resultList.classList.remove("show");
+
+                     if (lon && lat) {
+                        // 지도 이동
+                        vwmoveTo(lon, lat, 500);
+
+                        // 기존 마커 제거
+                        if (currentMarker) {
+                           map.removeMarker(currentMarker);
+                           currentMarker = null;
+                        }
+
+                        // 마커 생성
+                        const marker = new vw.geom.Point(new vw.Coord(lon, lat));
                                 marker.setImage("https://map.vworld.kr/images/op02/map_point.png");
                                 marker.create();
                                 window.selectedMarker = marker;
 
-								// PNU 조회 → 건물정보 → 팝업 표시
-								getPnuFromCoord(lon, lat)
+                        // PNU 조회 → 건물정보 → 팝업 표시
+                        getPnuFromCoord(lon, lat)
                                 .then((pnu) => {
                                     if (!pnu) throw new Error("PNU를 찾을 수 없습니다.");
                                     $("#pnu").val(pnu);
@@ -342,26 +399,27 @@ document.addEventListener("DOMContentLoaded", () => {
                                     console.warn("검색 기반 PNU 조회 실패:", err);
                                     alert("건물 정보를 불러올 수 없습니다.");
                                 });
-							} else {
-								alert("좌표 정보가 없습니다.");
-							}
-						});
+                     } else {
+                        alert("좌표 정보가 없습니다.");
+                     }
+                  });
 
-						resultList.appendChild(div);
-					});
+                  resultList.appendChild(div);
+               });
 
-					resultList.classList.add("show");
-				},
-				error: function (err) {
-					console.error("주소 검색 오류:", err);
-				}
-			});
-		});
-	});
+               resultList.classList.add("show");
+            },
+            error: function (err) {
+               console.error("주소 검색 오류:", err);
+            }
+         });
+      });
+   });
 });
 
 function showPopup(html, windowPosition) {
     const popup = document.getElementById("popup");
+    if (popup.style.display === "block") return;
     const posX = windowPosition?.x ?? window.innerWidth / 2;
     const posY = windowPosition?.y ?? window.innerHeight / 2;
 
@@ -374,68 +432,6 @@ function showPopup(html, windowPosition) {
 
 
 
-// 검색 요청 함수
-// function searchAddress(keyword) {
-//     $.ajax({
-//         url: "https://api.vworld.kr/req/search",
-//         type: "GET",
-//         dataType: "jsonp",
-//         data: {
-//             service: "search",
-//             request: "search",
-//             version: "2.0",
-//             crs: "EPSG:4326",
-//             key: "AED66EDE-3B3C-3034-AE11-9DBA47236C69",
-//             query: keyword,
-//             type: "address",
-//             category: "road",
-//             format: "json"
-//         },
-//         success: function (response) {
-//             const resultContainer = document.getElementById("search-results");
-//             resultContainer.innerHTML = "";
-
-//             if (response.response.status === "OK" && response.response.result.items.length > 0) {
-//                 response.response.result.items.forEach(item => {
-//                     const addr = item.address.road || item.address.parcel;
-//                     const li = document.createElement("li");
-//                     li.textContent = addr;
-//                     li.style.cursor = "pointer";
-
-//                     // 📍 클릭 시 지도 이동 + PNU 조회 → 건물정보 → 팝업 표시
-//                     li.addEventListener("click", function() {
-//                         const x = parseFloat(item.point.x);
-//                         const y = parseFloat(item.point.y);
-
-//                         // 1️지도 이동
-//                         vwmoveTo(x, y, 500);
-
-//                         // PNU 조회 → 건물 정보 API 호출
-//                         getPnuFromCoord(x, y)
-//                             .then(pnu => {
-//                                 if (!pnu) throw new Error("PNU를 찾을 수 없습니다.");
-//                                 $("#pnu").val(pnu); // 숨겨진 input에도 저장
-//                                 return getBuildingInfo(pnu); // 팝업 표시까지
-//                             })
-//                             .catch(err => {
-//                                 console.warn("검색 기반 PNU 조회 실패:", err);
-//                                 alert("건물 정보를 불러올 수 없습니다.");
-//                             });
-//                     });
-
-//                     resultContainer.appendChild(li);
-//                 });
-//             } else {
-//                 resultContainer.innerHTML = "<li>검색 결과가 없습니다.</li>";
-//             }
-//         },
-//         error: function () {
-//             alert("검색 요청 중 오류가 발생했습니다.");
-//         }
-//     });
-// }
-
-// document.addEventListener("DOMContentLoaded", searchAddress);
 
 //////////////////////////////
 //지도 이동
@@ -448,5 +444,103 @@ function vwmoveTo(x, y, z) {
 }
 
 function checkE(){
-    location.href="/GreenFinder/energyCheck";
+    
+    dummyDataEnergy();
+}
+
+function dummyDataEnergy(){
+    // 숨겨진 input에서 pnu 값 가져오기
+    const pnu = document.getElementById("pnu").value;
+    console.log("받은 PNU:", pnu);
+
+    if (!pnu) {
+        alert("PNU 값이 없습니다. 건물을 선택해주세요.");
+        return;
+    }
+
+    // Spring Controller로 GET 요청 보내기
+    fetch(`/GreenFinder/energyCheck/${pnu}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("데이터 없음");
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("서버에서 받은 데이터:", data);
+            location.href="/GreenFinder/energyCheck";
+            window.location.href = `/GreenFinder/energyCheck?pnu=${pnu}`;
+        })
+        .catch(error => {
+            console.error(error);
+            alert("해당 건물의 에너지 데이터가 없습니다.");
+            //location.href="/GreenFinder";
+        });
+}
+
+//팝업창 
+$(document).ready(function () {
+    // 쿠키 확인
+    var popup1 = getCookie('popup1');
+
+    // 쿠키가 없을 때만 팝업 노출
+    if (!popup1) {
+        popUpAction('popup1');
+    }
+
+    // 닫기 버튼 클릭 이벤트
+    $('.btn_close').click(function (e) {
+        e.preventDefault();
+
+        const name = $(this).data('popup'); // 팝업 이름 가져오기
+        const popupDiv = $("div[name=" + name + "]");
+
+        // 팝업 닫기
+        popupDiv.fadeOut();
+         $('.popup-overlay').fadeOut();
+        // 오늘 하루 보지 않기 체크 시 쿠키 설정
+        if (popupDiv.find("input[name=today_close1]").is(":checked")) {
+            setCookie00(name, "done", 1);
+        }
+    });
+});
+
+// ======================= 쿠키 관련 함수 =======================
+
+function getCookie(name) {
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    for (const cookie of cookies) {
+        if (cookie.startsWith(name + '=')) {
+            return cookie.substring(name.length + 1);
+        }
+    }
+    return "";
+}
+
+// 00:00 기준으로 쿠키 설정
+function setCookie00(name, value, expiredays) {
+    var todayDate = new Date();
+    todayDate = new Date(parseInt(todayDate.getTime() / 86400000) * 86400000 + 54000000);
+
+    if (todayDate > new Date()) {
+        expiredays = expiredays - 1;
+    }
+
+    todayDate.setDate(todayDate.getDate() + expiredays);
+
+    document.cookie = `${name}=${escape(value)}; path=/; expires=${todayDate.toGMTString()};`;
+}
+
+// 팝업 보이기
+function popUpAction(name) {
+    $('.popup-overlay').fadeIn();
+    $("div[name=" + name + "]").fadeIn();
+}
+
+function remodelong_move(){
+    window.location.href = '/forecast';
+}
+
+function simulater_move(){
+    window.location.href = '/simulator';
 }

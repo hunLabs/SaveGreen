@@ -31,13 +31,17 @@ from __future__ import annotations
 import threading
 import time
 import uuid
+import os
+from . import train
+import importlib  # [ADD] run_id 적용 후 train 모듈을 재평가(reload)하기 위해 추가
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Literal
 
 # 현재 단계에서는 기존 train.py의 main()을 호출해 model.pkl을 저장합니다.
 # 다음 단계에서 K-Fold/A/B/C 로직을 이 모듈 안에서 직접 구현하도록 확장합니다.
-from . import train
+
 
 
 # --------- 타입 정의 ---------
@@ -130,39 +134,73 @@ def _sleep_with_heartbeat(job: TrainJob, seconds: float, tick: float = 0.25) -> 
 
 
 def _run_job(job_id: str) -> None:
-	"""
-	실제 학습 본문(백그라운드 스레드).
-	1단계: 기존 train.main()을 호출해 data/model.pkl 저장.
-	2단계: 여기서 K-Fold/A/B/C + manifest.json까지 수행하도록 확장.
-	"""
-	job = get_status(job_id)
-	if not job:
-		return  # 이례적: 생성 직후 소실된 경우
+    """
+    실제 학습 본문(백그라운드 스레드).
+    1단계: 기존 train.main()을 호출해 data/model.pkl 저장.
+    2단계: 여기서 K-Fold/A/B/C + manifest.json까지 수행하도록 확장.
+    """
+    job = get_status(job_id)
+    if not job:
+        return  # 이례적: 생성 직후 소실된 경우
 
-	try:
-		# Step 1) 대기열 → TRAINING
-		job.set("TRAINING", 20, "[TRAIN] queued → training")
-		_sleep_with_heartbeat(job, 0.5)
+    try:
+        # Step 1) 대기열 → TRAINING
+        job.set("TRAINING", 20, "[TRAIN] queued → training")
+        _sleep_with_heartbeat(job, 0.5)
 
-		# Step 2) (2단계에서 의미 있게 사용)
-		job.set("EVALUATING", 40, "[TRAIN] preparing evaluation (K-Fold reserved)")
-		_sleep_with_heartbeat(job, 0.5)
+        # Step 2) (2단계에서 의미 있게 사용)
+        job.set("EVALUATING", 40, "[TRAIN] preparing evaluation (K-Fold reserved)")
+        _sleep_with_heartbeat(job, 0.5)
 
-		# Step 3) 실제 학습 — 현재는 기존 train.main() 실행
-		job.set("TRAINING", 60, "[TRAIN] running train.main() to build model.pkl")
-		# 여기서 실제 학습 수행(데이터 로드→피처→학습→성능로그→model.pkl 저장)
-		train.main()
-		job.push("[TRAIN] train.main() finished")
+        # Step 3) 실제 학습 — 현재는 기존 train.main() 실행
+        job.set("TRAINING", 60, "[TRAIN] running train.main() to build model.pkl")
 
-		# Step 4) 저장 단계 — model/manifest 저장(2단계 확장 포인트)
-		job.set("SAVING", 80, "[TRAIN] saving artifacts (model/manifest)")
-		_sleep_with_heartbeat(job, 0.4)
+        # [ADD] FastAPI/Spring이 부여한 job_id(=runId)를 train.py에 전달
+        #       train.py 는 모듈 로딩 시 os.getenv("ML_RUN_ID")를 읽어 RUN_ID를 결정하므로,
+        #       reload 전에 환경변수를 먼저 설정해야 JSONL의 tags.run_id가 정확히 묶인다.
+        os.environ["ML_RUN_ID"] = job_id
 
-		# Step 5) 완료
-		job.set("READY", 100, "[TRAIN] job completed successfully")
-		job.done()
+        # [ADD] 방금 설정한 ML_RUN_ID로 train 모듈을 재평가(reload)
+        #       - 이미 import된 상태라면 reload로 RUN_ID를 새로 고정
+        #       - 패키지/상대경로 환경 모두 고려해 안전하게 처리
+        import importlib
+        try:
+            import train  # 프로젝트 구조에 따라 이 경로 유지
+        except ImportError:
+            from . import train  # 패키지 내부 상대 임포트 환경일 때
+        else:
+            # 위 'except'에서 상대임포트를 했으면 이름이 train으로 바인딩됨
+            pass
+        try:
+            importlib.reload(train)  # ★ 핵심: reload 후에 main() 호출
+        except Exception:
+            # reload가 실패해도 기존 main()은 호출 가능하므로 로깅만 남기고 계속 진행
+            ml_logging.log_event(
+                "warn",
+                kind="reload_skip",
+                area="app",
+                payload={"reason": "importlib.reload failed; using existing module"},
+                tags={"run_id": job_id},
+            )
 
-	except Exception as e:
-		job.set("FAILED", job.progress, f"[ERROR] {e!r}")
-		job.error = str(e)
-		job.done()
+        # 여기서 실제 학습 수행(데이터 로드→피처→학습→성능로그→model.pkl 저장)
+        train.main()
+        job.push("[TRAIN] train.main() finished")
+
+        # Step 4) 저장 단계 — model/manifest 저장(2단계 확장 포인트)
+        job.set("SAVING", 80, "[TRAIN] saving artifacts (model/manifest)")
+        _sleep_with_heartbeat(job, 0.4)
+
+        # Step 5) 완료
+        job.set("READY", 100, "[TRAIN] job completed successfully")
+        job.done()
+
+    except Exception as e:
+        job.set("FAILED", job.progress, f"[ERROR] {e!r}")
+        job.error = str(e)
+        job.done()
+
+    finally:
+        # [ADD] 러닝 간섭 방지를 위해 환경변수 정리
+        os.environ.pop("ML_RUN_ID", None)
+

@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
 	
-  
+
 
 	// 타임리프
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' 
@@ -52,8 +52,15 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // RestTemplate용 Apache HttpClient 5.x
+    implementation 'org.apache.httpcomponents.client5:httpclient5' // (버전은 Spring Boot BOM이 관리)
 }
+
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-parameters"
 }

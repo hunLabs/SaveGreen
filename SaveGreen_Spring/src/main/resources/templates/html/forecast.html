@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>GREEN REMODELING</title>
+    <title>SAVE GREEN</title>
 
     <!-- 공통 → 컴포넌트 → 페이지 전용 -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -47,7 +47,7 @@
     <section class="hero-block">
         <div class="hero-inner">
             <div class="hero-text">
-                <h1>GREEN REMODELING</h1><br><br>
+                <h1>ENERGY REMODELING</h1><br><br>
                 <h2>운영비는 낮추고,<br/>건물 가치는 높이는 가장 똑똑한 선택</h2><br>
                 <p class="hero-desc">
                     데이터 기반 머신러닝으로 예상 비용 절감, 에너지 절감량, 투자 회수 기간을 예측합니다.
@@ -63,7 +63,7 @@
                         loop
                         playsinline
                         preload="metadata"
-                        aria-label="그린 리모델링 소개 영상"
+                        aria-label="에너지 리모델링 소개 영상"
                 >
                     <source th:src="@{/video/solar2.mp4}" type="video/mp4" />
                     브라우저가 비디오를 지원하지 않습니다.
@@ -101,7 +101,7 @@
                <span class="chip" id="chip-model">
                   <span class="dot" aria-hidden="true"></span>
                   <strong>모델</strong><span class="sep" aria-hidden="true">:</span>
-                  <span class="truncate" id="modelName">Linear Regression</span>
+                  <span class="truncate" id="modelName">-</span>
                </span>
 
                 <span class="chip">
@@ -164,7 +164,7 @@
 							<li data-k="useName"><span class="k">용도</span><span class="v"></span></li>
 							<li data-k="builtYear"><span class="k">사용승인연도</span><span class="v"></span></li>
 							<li data-k="floorArea"><span class="k">면적</span><span class="v"></span></li>
-							<li data-k="pnu"><span class="k">PNU</span><span class="v"></span></li>
+<!--							<li data-k="pnu"><span class="k">PNU</span><span class="v"></span></li>-->
 						</ul>
 						<p class="sub">선택한 대상이 맞나요? 정보가 다르면 결과가 달라질 수 있어요.</p>
 						<div class="skeleton s-line"></div>
@@ -196,9 +196,9 @@
 
 				<div class="preload-foot">
 					<div id="risk-badges" class="badges" aria-label="리스크 지표"></div>
-					<p id="benchmark-line" class="benchmark">
-						동일 용도 평균 EUI: <strong>약 180 kWh/㎡·년</strong> <em>(참고치)</em>
-					</p>
+<!--					<p id="benchmark-line" class="benchmark">-->
+<!--						동일 용도 평균 EUI: <strong>약 180 kWh/㎡·년</strong> <em>(참고치)</em>-->
+<!--					</p>-->
 				</div>
 			</section>
 
@@ -224,7 +224,7 @@
         <!-- 여기부터 연두 배경: 카드 + 요약 + 배너 -->
         <div class="result-surface">
 
-            <div class="section-heading">그린 리모델링 절감 효과</div>
+            <div class="section-heading">에너지 리모델링 절감 효과</div>
 
             <!-- KPI 카드 (피그마 순서/라벨) -->
             <section class="kpis">
@@ -238,7 +238,7 @@
                     <div class="meta">
                         <div class="label">에너지 등급</div>
                         <div id="kpi-grade" class="value">-</div>
-                        <div class="sub">EUI 기준 산출</div>
+                        <div class="sub">단위면적당 에너지 사용량 기준</div>
                     </div>
                 </article>
 
@@ -252,7 +252,7 @@
                     <div class="meta">
                         <div class="label">절감 비용(원/년)</div>
                         <div id="kpi-saving-cost" class="value">-</div>
-                        <div class="sub">절감 에너지 × 단가</div>
+                        <div class="sub">절감 에너지 × 전력 단가</div>
                     </div>
                 </article>
 
@@ -264,7 +264,7 @@
                      </span>
                     </div>
                     <div class="meta">
-                        <div class="label">투자 회수 기간</div>
+                        <div class="label">투자 회수 기간(년)</div>
                         <div id="kpi-payback" class="value">-</div>
                         <div class="sub">단순 회수 기준</div>
                     </div>
@@ -316,7 +316,7 @@
     <div id="page-data" th:data-building-id="${buildingId}" hidden></div>
 </main>
 
-<!--<div th:replace="~{layouts/footer :: footer}"></div>-->
+<div th:replace="~{layouts/footer :: footer}"></div>
 
 <!-- 라이브러리 -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

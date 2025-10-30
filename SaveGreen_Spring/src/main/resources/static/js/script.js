@@ -44,19 +44,19 @@ const navbar = document.querySelector('.navbar');
 const line = document.querySelector('.lineHR');
 const container = document.querySelector('.container');
 
-container.addEventListener('scroll', () => {
-  const st = container.scrollTop;
-  if (st > lastScrollTop + 5) {
-    navbar.classList.add('nav-up');
-    line.classList.add('lineHR-up');
-  } else if (st < lastScrollTop - 5) {
-    navbar.classList.remove('nav-up');
-    line.classList.remove('lineHR-up');
-  }
+// container.addEventListener('scroll', () => {
+//   const st = container.scrollTop;
+//   if (st > lastScrollTop + 5) {
+//     navbar.classList.add('nav-up');
+//     line.classList.add('lineHR-up');
+//   } else if (st < lastScrollTop - 5) {
+//     navbar.classList.remove('nav-up');
+//     line.classList.remove('lineHR-up');
+//   }
 
 
-  lastScrollTop = st;
-});
+//   lastScrollTop = st;
+// });
 
 // 모든 next_show 요소 선택
 const banners = document.querySelectorAll('.main-banner');

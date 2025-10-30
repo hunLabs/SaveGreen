@@ -3,14 +3,14 @@ document.addEventListener("DOMContentLoaded", () => {
 Swal.fire({
     title: '시뮬레이터 사용법',
     html: '<h4>에너지 등급 시뮬레이터</h4>'
-         +'<b>1.</b>지도 클릭(서비스) 혹은 주소검색으로 주소,면적 입력하기<br>'
-         +'<b>2.</b>태양광 패널 갯수,정격출력 입력하기<br>'
-         +'<b>3.</b> 결과확인 버튼 누르기<br>'
+         +'<b>1.</b>앞서 GREEN FINDER (건물정보검색) 페이지에서 선택한 건물정보(주소,건물면적, 전기사용량)이 자동기입됩니다.<br>- 선택하지 않으시면 직접 검색 및 입력 가능합니다.<br>'
+         +'<b>2.</b>태양광 패널을 설치 되어 있으시면 패널 개수 및 모델명 및 출력 적용해주세요.<br>- 미기입시에도 결과 보기 가능합니다.<br>'
+         +'<b>3.</b>결과보기를 클릭 후 내용을 확인하세요.<br>'
          +'<h4>태양광 에너지 효율 경제성 시뮬레이터</h4>'
-         +'<b>1.</b>지도 클릭(건물 정보 입력)<br>   혹은 주소검색으로 주소,면적 입력하기<br>'
-         +'<b>2.</b>현재 등급,목표 등급 선택하기<br>'
-         +'<b>3.</b>태양광 패널 정격출력 입력하기<br>'
-         +'<b>4.</b> 결과확인 버튼 누르기<br>',
+         +'<b>1.</b>앞서 GREEN FINDER (건물정보검색) 페이지에서 선택한 건물정보(주소,건물면적)이 자동기입됩니다.<br>- 선택하지 않으시면 직접 검색 및 입력 가능합니다.<br>'
+         +'<b>2.</b>에너지 시뮬레이터에서 확인하신 등급과 목표 등급을 선택해주세요.<br>'
+         +'<b>3.</b>태양광 패널의 모델명과 출력에너지를 적용해주세요.<br>'
+         +'<b>4.</b>결과보기를 클릭 후 내용을 확인하세요.<br>',
     icon: 'info',
     customClass: {
       htmlContainer: 'swal-text',
@@ -82,12 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form1.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const spinBtn1 = document.getElementById("left");
+         spinBtn1.insertAdjacentHTML("beforeend", '<span class="btn-spinner"></span>');
+
+
         const box = document.getElementById('resultBox1');
         const items = box.querySelectorAll('.result-item');
         const box3 = document.getElementById("intensityChart1");
         const box4 = document.getElementById("intensityChart2");
         const box5 = document.getElementById("intensityChart3");
         const box2 = document.getElementById('compareText');
+        const btn = document.querySelector('.pdfBtn');
         if (!box3) return;
 
 
@@ -112,19 +117,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('renewableSupport').textContent = data.renewableSupport ?? '-';
         document.getElementById('zebGrade').textContent = data.zebGrade ?? '-';   
 
+
+
         
-        // sendAiSummary(data)
         box.style.display='block';
         box2.style.display='block';
         box3.style.display='block';
         box4.style.display='block';
         box5.style.display='block';
         runCompare();
-        document.getElementById('aiSummaryBtn').style.display = 'block';
-      
+        document.getElementById("aiText").style.display = "block";
+        document.getElementById("aiResult").style.display = "block";
+        document.getElementById("aiSummaryBtn").style.display = "block";
+        btn.style.display = "block";
         items.forEach((item, index) => {
           setTimeout(() => item.classList.add('show'), index * 300);
         });
+        document.querySelectorAll(".btn-spinner").forEach(s => s.remove());
+        document.getElementById("resultBox1").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
 
@@ -134,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form2.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const spinBtn2 = document.getElementById("right");
+        spinBtn2.insertAdjacentHTML("beforeend", '<span class="btn-spinner"></span>');
         const formData = new FormData(form2);
 
         const resp = await fetch('/simulate2', {
@@ -149,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const box2 = document.getElementById('compareText');
         const box6 = document.getElementById("solarEfficiencyChart");
         const items = box.querySelectorAll('.result-item');
-        
+        const btn = document.querySelector('.pdfBtn');
         items.forEach(item => item.classList.remove('show'));
 
         document.getElementById('solarRadiation').value = data.solarRadiation;
@@ -171,18 +183,29 @@ document.addEventListener('DOMContentLoaded', () => {
         box2.style.display='block'
         box6.style.display = 'block';
         addNewResultToChart()
-        document.getElementById('aiSummaryBtn').style.display = 'block';
-
+        document.getElementById("aiText").style.display = "block";
+        document.getElementById("aiResult").style.display = "block";
+        document.getElementById("aiSummaryBtn").style.display = "block";
+        btn.style.display = "block";
       
         items.forEach((item, index) => {
           setTimeout(() => item.classList.add('show'), index * 300);
         });
+        document.querySelectorAll(".btn-spinner").forEach(s => s.remove());
+        document.getElementById("resultBox2").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
 
 const aiBtn = document.getElementById("aiSummaryBtn");
 
   aiBtn.addEventListener("click", async () => {
+
+    // const spinBtn3 = document.getElementById("aiSummaryBtn");
+    //   spinBtn3.insertAdjacentHTML("beforeend", '<span class="btn-spinner"></span>');
+
+    aiBtn.disabled = true;
+    aiBtn.innerHTML = '분석 중... <span class="btn-spinner"></span>'; 
+
 
     const leftResult = window.simulatorData1 || null;  
     const rightResult = window.simulatorData2 || null; 
@@ -192,59 +215,68 @@ const aiBtn = document.getElementById("aiSummaryBtn");
 
     if (leftResult && rightResult) {
       prompt = `
-        이 시뮬레이터는 건물의 에너지 효율 등급을 평가하고, 
-        태양광 패널을 설치했을 때 목표 등급에 도달하기 위해 필요한 패널 수와 
-        그에 따른 경제적·환경적 효과를 분석하기 위한 시스템입니다.
+          이 시뮬레이터는 건물의 에너지 효율 등급을 평가하고, 
+          태양광 패널을 설치했을 때 목표 등급에 도달하기 위해 필요한 패널 수와 
+          그에 따른 경제적·환경적 효과를 분석하기 위한 시스템입니다.
 
-        시뮬레이션의 기본 흐름은 다음과 같습니다:
-        1. [에너지 효율 시뮬레이터]는 건물의 주소, 면적, 위도·경도, 에너지 사용량, 태양광 패널 정격 출력, 
-          에너지 효율 등급 기준 등을 바탕으로 현재 건물의 등급과 세제 감면율을 산출합니다.
-        2. [태양광 경제성 시뮬레이터]는 사용자가 에너지 효율 시뮬레이터에서 검색한 현재등급에서 "현재 등급 → 목표 등급" 구간을 바탕으로,
-          목표 등급을 달성하기 위해 필요한 태양광 패널 수를 계산하고, 
-          예상 발전량, 절약 전기량, 탄소 절감량, 절세 효과 등을 분석합니다.
-        3. 이 두 결과를 종합하여, 태양광 설치 전후의 에너지 자립률 변화, 
-          세제 인센티브, 환경적 개선 효과를 비교·평가합니다.
+          시뮬레이션의 기본 흐름은 다음과 같습니다:
+          1. [에너지 효율 시뮬레이터]는 건물의 주소, 면적, 위도·경도, 에너지 사용량, 태양광 패널 정격 출력, 
+            에너지 효율 등급 기준 등을 바탕으로 현재 건물의 등급과 세제 감면율을 산출합니다.
+          2. [태양광 경제성 시뮬레이터]는 사용자가 에너지 효율 시뮬레이터에서 검색한 현재등급에서 "현재 등급 → 목표 등급" 구간을 바탕으로,
+            목표 등급을 달성하기 위해 필요한 태양광 패널 수를 계산하고, 
+            예상 발전량, 절약 전기량, 탄소 절감량, 절세 효과 등을 분석합니다.
+          3. 이 두 결과를 종합하여, 태양광 설치 전후의 에너지 자립률 변화, 
+            세제 인센티브, 환경적 개선 효과를 비교·평가합니다.
 
-        
-        실제계산은 이 기준으로 합니다:
-        패널 규격: 2.2 ㎡ / 500 Wp(=0.5 kW) / 장
-        설치 필요 면적(간격 포함): 패널 면적 x 1.8 = 3.96 ㎡/장
-        패널 단가: 400,000원/장
-        설치비(시공): 100,000원/장
-        전력요금: 185.5 원/kWh
-        전력 배출계수: 0.415 kgCO₂/kWh
-        발전 효율 상수: 0.8
+          데이터 항목 설명(변수명은 그대로 사용하세요):
+          - solarradiation: 연간 태양광 일사량  
+          - onePanelGeneration: 패널 1개당 연간 발전량  
+          - onePanelCO2: 패널 1개당 연간 CO₂ 절감량  (0.1ton)
+          - annualSaveElectric: 연간 절감 전기세(만원)  
+          - annualSaveCO2: 연간 절감 CO₂량(ton)  
+          - total: 연간 절감 전기에너지량(kWh)
+          - requiredPanels: 목표 등급 달성을 위한 필요한 패널 수  
+          - propertyTax / acquireTax / areaBonus / certificationDiscount: 재산세/취득세/용적률증가/인증비용감면율
+          - grade / zebGrade: 에너지 효율 등급 및 ZEB 등급  
+          - energySelf: 에너지 자립률(%)  
+          - category: 건물 유형 (예: 공장, 병원, 창고 등)
+          - daySolar: 일평균 일사량 (kWh/m²/day)
+          - currentGrade: 현재 에너지 효율 등급
+          - targetGrade: 목표 에너지 효율 등급
+          - 패널1개당 설치 면적 요구치는 약 3.3m²입니다.
 
-        데이터 항목 설명:
-        - solarradiation: 태양광 일사량  
-        - onePanelGeneration: 패널 1개당 연간 발전량  
-        - onePanelCO2: 패널 1개당 연간 CO₂ 절감량  
-        - annualSaveElectric: 연간 절감 전기세(만원)  
-        - annualSaveCO2: 연간 절감 CO₂량(ton)  
-        - total: 연간 절감 전기에너지량(kWh)
-        - requiredPanels: 목표 등급 달성을 위한 필요한 패널 수  
-        - propertyTax / acquireTax / areaBonus / certificationDiscount: 재산세/소득세/용적률증가/인증비용감면율
-        - grade / zebGrade: 에너지 효율 등급 및 ZEB 등급  
-        - energySelf: 에너지 자립률(%)  
-        - category: 건물 유형 (예: 공장, 병원, 창고 등)
+          [분석 규칙(반드시 준수)]
+          - 각 문장은 반드시 “수치 → 의미(원인→결과)”를 포함하세요. 숫자만 나열 금지.
+          - 에너지 자립률은 태양광패널개수가 입력되지 않으면 0%일 수 있으므로 그 가능성을 고려해 해석하세요.
+          - 도메인 변수명은 반드시 위에 제시한 이름 그대로 사용하세요(예: acquireTax는 ‘취득세’로 해석하되 변수명 맥락 유지).
+          - 퍼센타일/평균 비교 가능하다면 제시하세요.
+          - “대안/우선순위”를 반드시 포함해 의사결정 관점의 분석을 하세요(예: 패널 수 증설 vs 효율 개선 vs 배치 최적화).
+          - 출력은 항상 딱딱한 보고서형식보단 자연스러운 기사문체로 작성하세요.
 
-        ---
+          [필수 검증(불일치 시 내부적으로 재계산 후 일관된 수치로 서술; 계산 과정은 노출하지 않음)]
+          - total ≈ requiredPanels x onePanelGeneration
+          - annualSaveElectric ≈ total x 0.1855 / 10000    (만원)
+          - annualSaveCO2 ≈ total x 0.415 / 1000           (톤)
+          - onePanelCO2(톤/패널) ≈ annualSaveCO2 / requiredPanels
+          - 값이 제공되지 않은 경우에는 추정하지 말고 “데이터 미제공”으로 간결히 언급
 
-        결과는 반드시 다음의 3단 구조로 서술해주세요:
-        ① 현재 상태 분석 — 건물의 에너지 효율, 자립률, 등급, 절세 현황  
-        ② 목표 등급 달성을 위한 태양광 시나리오 — 필요한 패널 수, 절감량, CO₂ 저감 효과, 경제성  
-        ③ 종합 평가 — 환경적·경제적 개선 효과, 등급 상승 가능성, 지속 가능성 관점 요약
+          [출력 형식(문단 3개, 15~25줄 내외)]
+          ① 현재 상태 분석 — grade, zebGrade, energySelf, propertyTax/acquireTax/areaBonus/certificationDiscount, 
+            eik1 vs average1, percent(상위%) 등을 “운영비/정책 인센티브 관점”으로 해석. 
+            위험(병목)과 기회(레버리지)를 4~5문장으로 요약.
 
-        추가 지침:
-        - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 15~25줄 내외로 서술해주세요.
-        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 그 점을 고려하여 작성해주세요.
-        - 에너지 효율등급은 1+++,1++,1+,1,2,3,4,5,6,7등급까지 존재합니다.예를들어 1등급은 사실상 10개중 4번째 등급이므로 중간에위치한 등급임을 인지하고 설명해주세요
-        - 문단 구분은 하되, 문단 번호 제외한 기호는 삼가해주세요. 
-        - 데이터 간의 관계와 의미를 분석하되, 단순 수치 나열보다 "개선 인사이트"에 초점을 맞춰주세요.  
-        - 주요 수치(예: 절감량, 등급, 감면율 등)는 문장 안에 자연스럽게 포함시켜주세요.  
-        - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 흐름 중심으로,  
-          하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요.
-        - 계산 기준을 가지고 이 건물의 최대 태양광 설치 가능 개수같은 수치적 접근을 해주세요
+          ② 목표 등급 달성을 위한 태양광 시나리오 — requiredPanels, total, annualSaveElectric, annualSaveCO2, onePanelGeneration,
+            onePanelCO2를 근거로 “투입 대비 효과(만원/패널, 톤/패널), 설치 면적(= requiredPanels x 3.3m²)과 현실성, 
+            대안(패널 효율/배치/부분 설치)”을 4~6문장 분석. 단순 나열 금지.
+
+          ③ 종합 평가 — 경제성·환경성·정책 인센티브를 함께 보아 실행 타당성을 2~3문장으로 정리. 
+            가정/전제(전력단가 185.5원/kWh, 배출계수 0.415 kgCO₂/kWh 등)를 한 줄로 명시.
+
+          [금지]
+          - 표/리스트형 숫자 나열만 하는 문장
+          - “데이터가 ~입니다” 같은 정보 나열형 문장 반복
+          - 좌/우(왼쪽/오른쪽) 존재 시 무조건 비교로 끝내기 (비교는 가능하되, 최종 문단은 의사결정 인사이트로 마무리)
+       
 
         [왼쪽 결과]
         ${JSON.stringify(leftResult)}
@@ -259,30 +291,39 @@ const aiBtn = document.getElementById("aiSummaryBtn");
         입력된 주소, 면적, 위도·경도, 에너지 사용량, 태양광 패널 정격 출력, 
         에너지 효율 기준을 바탕으로 현재 상태의 등급 및 절세 가능성을 분석합니다.
 
-       실제계산은 이 기준으로 합니다:
-        패널 규격: 2.2 ㎡ / 500 Wp(=0.5 kW) / 장
-        설치 필요 면적(간격 포함): 패널 면적 x 1.8 = 3.96 ㎡/장
-        패널 단가: 400,000원/장
-        설치비(시공): 100,000원/장
-        전력요금: 185.5 원/kWh
-        전력 배출계수: 0.415 kgCO₂/kWh
-        발전 효율 상수: 0.8
+        데이터 항목 설명:
+      - solarradiation: 연간 태양광 일사량  
+      - onePanelGeneration: 패널 1개당 연간 발전량  
+      - onePanelCO2: 패널 10개당 연간 CO₂ 절감량
+      - annualSaveElectric: 연간 절감 전기세(만원)  
+      - annualSaveCO2: 연간 절감 CO₂량(ton)  
+      - total: 연간 절감 전기에너지량(kWh)
+      - requiredPanels: 목표 등급 달성을 위한 필요한 패널 수  
+      - propertyTax / acquireTax / areaBonus / certificationDiscount: 재산세/취득세/용적률증가/인증비용감면율
+      - grade / zebGrade: 에너지 효율 등급 및 ZEB 등급  
+      - energySelf: 에너지 자립률(%)  
+      - category: 건물 유형 (예: 공장, 병원, 창고 등)
+      - daySolar: 일평균 일사량 (kWh/m²/day)
+
 
         결과는 다음 3단 구조로 작성하세요:
-        ① 현재 상태 분석 — 건물의 등급, 자립률, 절세 현황  
+        ① 현재 상태 분석 — 건물의 등급, 자립률, 절세 현황을 얘기하지만. 자립률이 0인경우는 미입력이거나 0개일수도있다는 가정을 해야합니다. 몰라서 미입력인데 0이라고 확정짓고 대답하면 흐름이 이상해집니다.
         ② 개선 필요성 — 태양광 설치 또는 효율 개선을 통한 잠재 효과  
-        ③ 종합 평가 — 향후 절감, 환경 개선, 정책 연계 가능성  
+        ③ 종합 평가 — 환경적·경제적 기여 가능성, 등급 향상 여지, 정책적인 인사이트를 얘기해주세요.
 
         추가 지침:
-        - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 10~15줄 내외로 서술해주세요.
-        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 몰라서 입력을 안했거나, 0개일수도있다는 두가지 가정을 고려하여 작성해주세요.
-        - 에너지 효율등급은 1+++,1++,1+,1,2,3,4,5,6,7등급까지 존재합니다.예를들어 1등급은 사실상 10개중 4번째 등급이므로 중간에위치한 등급임을 인지하고 설명해주세요
+        - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 15~25줄 내외로 서술해주세요.
+        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 그 점을 고려하여 작성해주세요.
+        - 에너지 효율등급은 다음과 같이 숫자가 낮을수록 효율이 나쁜 구조입니다."1+++", "1++", "1+", "1", "2", "3", "4", "5", "6", "7" 순서로 존재합니다. 
+        - ZEB등급은 다음과 같이 숫자가 높을수록 효율이 나쁜 구조입니다."+", "1", "2", "3", "4", "5" 순서로 존재합니다. +는 1등급보다 더 좋은등급입니다.
+        - 절세율은 0%부터 시작하여 최대 20%까지 존재합니다. 퍼센트가 높을수록 좋은구조입니다.
         - 문단 구분은 하되, 문단 번호 제외한 기호는 삼가해주세요. 
         - 데이터 간의 관계와 의미를 분석하되, 단순 수치 나열보다 "개선 인사이트"에 초점을 맞춰주세요.  
         - 주요 수치(예: 절감량, 등급, 감면율 등)는 문장 안에 자연스럽게 포함시켜주세요.  
-        - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 비교 중심으로,  
-          하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요.  
-        - 계산 기준을 가지고 이 건물의 최대 태양광 설치 가능 개수같은 수치적 접근을 해주세요
+        - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 흐름 중심으로,  
+          하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요. 두 데이터의 비교는 하지마세요.
+        
+
 
         [왼쪽 결과]
 
@@ -295,29 +336,38 @@ const aiBtn = document.getElementById("aiSummaryBtn");
         해당 목표를 달성하기 위해 필요한 태양광 패널 수, 
         에너지 절감 효과, 탄소 절감량, 경제적 효과를 분석하는 시스템입니다.
 
-        실제계산은 이 기준으로 합니다:
-        패널 규격: 2.2 ㎡ / 500 Wp(=0.5 kW) / 장
-        설치 필요 면적(간격 포함): 패널 면적 x 1.8 = 3.96 ㎡/장
-        패널 단가: 400,000원/장
-        설치비(시공): 100,000원/장
-        전력요금: 185.5 원/kWh
-        전력 배출계수: 0.415 kgCO₂/kWh
-        발전 효율 상수: 0.8
+         데이터 항목 설명:
+        - solarradiation: 연간 태양광 일사량  
+        - onePanelGeneration: 패널 1개당 연간 발전량  
+        - onePanelCO2: 패널 1개당 연간 CO₂ 절감량 (0.1ton) 
+        - annualSaveElectric: 연간 절감 전기세(만원)  
+        - annualSaveCO2: 연간 절감 CO₂량(ton)  
+        - total: 연간 절감 전기에너지량(kWh)
+        - requiredPanels: 목표 등급 달성을 위한 필요한 패널 수  
+        - energySelf: 에너지 자립률(%)  
+        - category: 건물 유형 (예: 공장, 병원, 창고 등)
+        - daySolar: 일평균 일사량 (kWh/m²/day)
+        - currentGrade: 현재 에너지 효율 등급
+        - targetGrade: 목표 에너지 효율 등급
+        - 패널1개당 설치 면적 요구치는 약 3.3m²입니다.
+
+        - solarRadiation 나누기 366 하면 daySolar가 나옵니다(윤년).
+        - solarRadiation 곱하기 efficiency(0.8) 곱하기 정격출력(kw) 곱하기 패널수 = total
+        - annualSaveElectric = total 곱하기 0.1855 / 10000
+        - annualSaveCO2 = total 곱하기 0.419 / 1000
+      
 
         결과는 다음 3단 구조로 작성하세요:
-        ① 목표 등급 분석 — 설정된 목표의 의미와 달성 기준  
+        ① 시뮬레이터의 필요성에대해 설명해주세요, 이 시뮬레이터는 목표치 달성시 절감예측이 목표이므로 현재상태분석보단 필요성을 대두시키는게 중요합니다.
         ② 필요한 태양광 규모 — 패널 수, 발전량, 절감량, CO₂ 저감 효과  
         ③ 종합 평가 — 경제성, 환경 기여, 설치 타당성 및 정책적 시사점  
 
         추가 지침:
         - 형식적 문체 대신, 보고서나 기사처럼 자연스럽고 이해하기 쉬운 문장으로 10~15줄 내외로 서술해주세요.
-        - 에너지 자립률은 태양광패널개수가 입력되지않으면 0%이므로, 몰라서 입력을 안했거나, 0개일수도있다는 두가지 가정을 고려하여 작성해주세요.
-        - 문단 구분은 하되, 문단 번호 제외한 기호는 삼가해주세요. 
         - 데이터 간의 관계와 의미를 분석하되, 단순 수치 나열보다 "개선 인사이트"에 초점을 맞춰주세요.  
-        - 주요 수치(예: 절감량, 등급, 감면율 등)는 문장 안에 자연스럽게 포함시켜주세요.  
         - 왼쪽(기존 상태)과 오른쪽(태양광 적용 후) 데이터가 모두 존재한다면 비교 중심으로,  
           하나만 있을 경우에는 그 데이터의 의미를 중심으로 평가해주세요. 
-        - 계산 기준을 가지고 이 건물의 최대 태양광 설치 가능 개수같은 수치적 접근을 여러가지로 해주세요
+        - 계산적 접근이 주인 시뮬레이터기때문에 이 값이 어떻게 나온건지 수치적인 인사이트가 필요하고 이 데이터들로 더 얻을 수 있는 정보가 있으면 서술해주세요.
 
         [오른쪽 결과]
         ${JSON.stringify(rightResult)}
@@ -331,7 +381,7 @@ const aiBtn = document.getElementById("aiSummaryBtn");
     const aiResult = document.getElementById("aiResult");
     aiResult.textContent = " AI 분석 중입니다... 잠시만 기다려주세요.";
 
-
+    const aiText = document.getElementById("aiText");
     const resp = await fetch("/ai/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -339,13 +389,18 @@ const aiBtn = document.getElementById("aiSummaryBtn");
     });
 
     const data = await resp.json();
+    aiText.style.display = "block";
     aiResult.textContent = data.reply;
     aiResult.classList.add("show");
     aiResult.textContent = data.reply.trim();
+    aiBtn.disabled = false;
+    aiBtn.innerHTML = '다시 분석하기!';
 
     setTimeout(() => {
       aiResult.classList.add("show");
     }, 100);
+    aiResult.scrollIntoView({ behavior: "smooth", block: "start" });
+    
   });
 });
 
@@ -356,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("세션스토리지에서 가져온 건물면적:", area);
     if (area) {
         document.getElementById("area1").value = area;
-        document.getElementById("area2").value = area;
+        document.getElementById("area2").value = area; 
     }
 });
 
@@ -511,8 +566,14 @@ document.addEventListener("DOMContentLoaded", () => {
                       success: function (buildData) {
                         const area = buildData?.buildingUses?.field?.[0]?.buldBildngAr;
                         if (area) {
-                          $(currentForm).find("input[name='area']").val(area);
+                          // $(currentForm).find("input[name='area']").val(area);
+                          const areaInput = $(currentForm).find("input[name='area']")[0];
+                          areaInput.value = area; 
+                          areaInput.setAttribute("value", area); 
+                          areaInput.dispatchEvent(new Event("input", { bubbles: true }));
 
+                          
+                          
                           console.log("건물면적:", area);
                         } else {
                           console.warn("면적 정보 없음:", buildData);
@@ -582,9 +643,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         .then(r => r.ok ? r.json() : null)
                         .then(data => {
                           if (!data) return;
-                          const BM = document.querySelector('#buildingMonthly')
+                          const BM = document.getElementById('buildingMonthly')
                           BM.value = JSON.stringify(data);
                           console.log("선택건물 월별비중:", data);
+                          
                         });
 
                     // 카테고리 평균 퍼센트 가져오기
@@ -592,7 +654,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         .then(r => r.ok ? r.json() : null)
                         .then(data => {
                           if (!data) return;
-                          const CM = document.querySelector('#categoryMonthly');
+                          const CM = document.getElementById('categoryMonthly');
                           CM.value = JSON.stringify(data);
                           console.log("비교군 월별비중:", data);
                         });
@@ -895,9 +957,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;
-        const BM = document.querySelector('#buildingMonthly')
+        const BM = document.getElementById('buildingMonthly')
         BM.value = JSON.stringify(data);
         console.log("선택건물 월별비중:", data);
+        console.log(" 선택건물 월별비중 저장 완료:", BM.value);
       });
 
   // 카테고리 평균 퍼센트 가져오기
@@ -905,9 +968,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;
-        const CM = document.querySelector('#categoryMonthly');
+        const CM = document.getElementById('categoryMonthly');
         CM.value = JSON.stringify(data);
         console.log("비교군 월별비중:", data);
+         console.log(" 선택건물 월별비중 저장 완료:", CM.value);
       });
 });
 
@@ -946,6 +1010,298 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   
+});
+
+
+
+//에너지 효율 등급
+document.addEventListener("DOMContentLoaded", function () {
+  const steps = ["eg1", "eg2", "eg3", "eg4", "eg5"];
+  let current = 0;
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn1 = document.getElementById("left");
+  const descBox = document.getElementById("stepDescription");
+
+  
+  const descriptions = {
+  eg1: `
+    <strong>① 건물 주소 확인</strong><br>
+    입력하신 주소를 기반으로 <strong>면적 정보를 불러왔습니다.</strong><br>
+    입력된 정보가 맞다면 <em>‘다음으로’</em> 버튼을 눌러주세요.
+  `,
+
+  eg2: `
+    <strong>② 에너지 사용량 확인</strong><br>
+    시스템이 불러온 <strong>연간 에너지 사용량</strong>이 맞는지 확인해주세요.<br>
+    맞다면 <em>‘다음으로’</em> 버튼을 눌러주세요.
+  `,
+
+  eg3: `
+    <strong>③ 절감 효과 계산</strong><br>
+    입력하신 사용량을 기준으로 <strong>절감 효과</strong>를 계산합니다.<br>
+    다음 단계로 진행해주세요.
+  `,
+
+  eg4: `
+    <strong>④ 태양광 설치 여부</strong><br>
+    태양광 패널이 설치되어 있나요?<br>
+    <strong>‘예 / 아니오’</strong> 중 하나를 선택해주세요.
+  `,
+
+  eg5: `
+    <strong>⑤ 태양광 패널 정보 입력</strong><br>
+    설치된 개수를 입력하고, 사용할 패널의 정격출력을 선택해주세요.<br>
+    <em>1000m<sup>2</sup>당 약 250대의 패널 설치가 가능합니다.(패널 면적의 1.8배 필요)</em>
+    <ul style="margin-top:5px; line-height:1.3;">
+      <li><strong>400Wp</strong> — 소형 (가정용)</li>
+      <li><strong>550Wp</strong> — 중형 (일반 건물용)</li>
+      <li><strong>700Wp</strong> — 대형 (산업시설용)</li>
+    </ul>
+  `
+};
+
+  nextBtn.addEventListener("click", function () {
+    const currentGroup = document.getElementById(steps[current]);
+    const input = currentGroup.querySelector("input");
+
+    // 입력 확인
+    if (input && input.value.trim() === "") {
+      input.focus();
+      return;
+    }
+
+    // 설명 문구 표시
+    if (descriptions[steps[current]]) {
+      descBox.innerHTML = descriptions[steps[current]];
+      descBox.style.opacity = 1;
+    }
+
+    // 다음 단계 처리
+    if (current < steps.length - 1) {
+      const nextId = steps[current + 1];
+
+      
+      if (nextId === "eg4") {
+        nextBtn.style.display = "none";
+        const choiceDiv = document.getElementById("eg4-buttons");
+        choiceDiv.classList.remove("hidden");
+        choiceDiv.classList.add("show");
+        descBox.innerHTML = descriptions["eg4"];
+      } else {
+        // 일반 단계는 바로 표시
+        const nextGroup = document.getElementById(nextId);
+        nextGroup.classList.remove("hidden");
+        nextGroup.classList.add("show");
+      }
+
+      current++;
+    }
+  });
+
+
+  const btnYes = document.querySelector("#eg4-buttons .btn-yes");
+  const btnNo = document.querySelector("#eg4-buttons .btn-no");
+
+  // 예 
+  btnYes.addEventListener("click", function () {
+    
+    const buttonsDiv = document.getElementById("eg4-buttons");
+    buttonsDiv.classList.add("hidden");
+    buttonsDiv.classList.remove("show");
+
+    
+    document.getElementById("eg4").classList.remove("hidden");
+    document.getElementById("eg5").classList.remove("hidden");
+    document.getElementById("eg4").classList.add("show");
+    document.getElementById("eg5").classList.add("show");
+
+   
+    nextBtn.style.display = "block";
+
+    // 설명 문구 갱신
+    descBox.innerHTML = descriptions["eg5"];
+  });
+
+  //  아니오
+  btnNo.addEventListener("click", function () {
+    // eg4, eg5 모두 숨김
+    document.getElementById("eg4").classList.add("hidden");
+    document.getElementById("eg5").classList.add("hidden");
+
+    // 예/아니오 버튼 숨김
+    const buttonsDiv = document.getElementById("eg4-buttons");
+    buttonsDiv.classList.add("hidden");
+    buttonsDiv.classList.remove("show");
+
+    
+    submitBtn1.style.display = "block";
+    nextBtn.style.display = "none";
+
+    // 설명 문구 갱신
+    descBox.innerHTML = `
+    <strong>④ 입력 완료</strong><br>
+    모든 정보가 입력되었습니다.<br>
+    <strong>‘결과보기’</strong> 버튼을 눌러 시뮬레이션 결과를 확인하세요.<br>
+
+    ※ 조건을 수정하신 후 <strong>결과보기</strong>를 다시 클릭하면 
+    입력값을 기준으로 분석이 갱신됩니다. 
+  `;
+  });
+
+  // 
+  nextBtn.addEventListener("click", function () {
+    if (current === steps.length - 1) {
+      nextBtn.style.display = "none";
+      submitBtn1.style.display = "block";
+      descBox.innerHTML = `
+    <strong>④ 입력 완료</strong><br>
+    모든 정보가 입력되었습니다.<br>
+    <strong>‘결과보기’</strong> 버튼을 눌러 시뮬레이션 결과를 확인하세요.<br>
+
+    ※ 조건을 수정하신 후 <strong>결과보기</strong>를 다시 클릭하면 
+    입력값을 기준으로 분석이 갱신됩니다. 
+  `;
+    }
+  });
+});
+
+
+
+//태양광 패널
+
+document.addEventListener("DOMContentLoaded", function () {
+  const steps = ["sg1", "sg2", "sg3", "sg4" ];
+  let current = 0;
+  const nextBtn = document.getElementById("nextBtn2");
+  const submitBtn2 = document.getElementById("right");
+  const descBox = document.getElementById("stepDescription2");
+
+  
+  const descriptions = {
+  sg1: `
+    <strong>① 건물 정보 확인</strong><br>
+    입력하신 주소를 기반으로 <strong>면적 정보를 불러왔습니다.</strong><br>
+    정보가 맞다면 <em>‘다음으로’</em> 버튼을 눌러주세요.
+  `,
+
+  sg2: `
+    <strong>② 에너지 효율 등급 선택</strong><br>
+    현재 에너지 효율 등급과 <strong>목표 등급</strong>을 선택해주세요.<br>
+    목표 등급에 따라 필요한 <strong>태양광 패널 수</strong>가 계산됩니다.
+  `,
+
+  sg3: `
+    <strong>③ 태양광 패널 선택</strong><br>
+    설치 예정인 패널의 정격출력을 선택해주세요.<br>
+    <em>1000m<sup>2</sup>당 약 250대의 패널 설치가 가능합니다.(패널 면적의 1.8배 필요)</em>
+    <ul style="margin-top:5px; line-height:1.6;">
+      <li><strong>400Wp</strong> — 소형 (가정용)</li>
+      <li><strong>550Wp</strong> — 중형 (일반 건물용)</li>
+      <li><strong>700Wp</strong> — 대형 (산업시설용)</li>
+    </ul>
+  `,
+
+  sg4: `
+    <strong>④ 입력 완료</strong><br>
+    모든 정보가 입력되었습니다.<br>
+    <strong>‘결과보기’</strong> 버튼을 눌러 시뮬레이션 결과를 확인하세요.<br>
+
+    ※ 조건을 수정하신 후 <strong>결과보기</strong>를 다시 클릭하면 
+    입력값을 기준으로 분석이 갱신됩니다. 
+  `
+};
+ 
+   nextBtn.addEventListener("click", function () {
+    const currentGroup = document.getElementById(steps[current]);
+    const input = currentGroup.querySelector("input, select");
+
+    // 입력 확인
+    if (input && input.value.trim() === "") {
+      input.focus();
+      return;
+    }
+
+    // 설명 문구 갱신
+    if (descriptions[steps[current]]) {
+      descBox.innerHTML = descriptions[steps[current]];
+      descBox.style.opacity = 1;
+    }
+
+    // 다음 단계 열기
+    if (current < steps.length - 1) {
+      const nextId = steps[current + 1];
+      const nextGroup = document.getElementById(nextId);
+      nextGroup.classList.remove("hidden");
+      nextGroup.classList.add("show");
+      current++;
+    } else {
+     
+      nextBtn.style.display = "none";
+      submitBtn2.style.display = "block";
+      descBox.innerHTML = descriptions["sg4"];
+    }
+  });
+
+  
+});
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  convertPyeong("area1");
+  convertPyeong("area2");
+});
+
+function convertPyeong(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+
+  // 평수 표시용 라벨 생성 
+  let label = document.createElement("span");
+  
+  label.style.fontSize = "13px";
+  label.style.color = "#555";
+  label.classList.add("pyeong-label");
+
+  input.parentNode.appendChild(label);
+
+
+  // 평수 계산 표시 함수
+  function updatePyeong() {
+    const val = parseFloat(input.value);
+    if (!isNaN(val) && val > 0) {
+      const pyeong = (val / 3.3058).toFixed(1);
+      label.textContent = `(약 ${pyeong} 평)`;
+    } else {
+      label.textContent = "";
+    }
+  }
+
+  // 직접 입력 시 감지
+  input.addEventListener("input", updatePyeong);
+
+ 
+  if (input.value) {
+    updatePyeong();
+  }
+}
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  const downloadBtn = document.getElementById("downloadAll");
+
+  // downloadBtn.classList.add('show');
+  if (downloadBtn) {
+    downloadBtn.style.display = "block";  
+  }
+  const chatbotWin = document.querySelector('.chatbot-window');
+  if (chatbotWin) {
+    chatbotWin.classList.remove('hidden'); 
+    chatbotWin.classList.add('show');      
+  }
 });
 
 

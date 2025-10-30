@@ -31,7 +31,7 @@
       }
       return cnt ? acc / cnt : 0;
    }
-   // [추가] R² (결정계수): 1 - SS_res/SS_tot
+   // R² (결정계수): 1 - SS_res/SS_tot
    function _r2(y, yhat) {
       const n = Math.min(y.length, yhat.length);
       if (!n) return 0;
@@ -193,7 +193,7 @@
    }
 
    // ───────────────────────────────────────────────────────────
-   // [추가] 연→월 분해 (계절 가중 + 보정 → 재정규화)
+   // 연→월 분해 (계절 가중 + 보정 → 재정규화)
    //   - 입력: years[] (문자/숫자), yhat[] (연간 kWh)
    //   - 출력: [{ year, month, electricity }, ...]  // month=1..12
    //   - 옵션:
@@ -253,7 +253,7 @@
       return out;
    }
 
-   // [추가] 월→분기 집계
+   // 월→분기 집계
    // 입력: [{year, month, electricity}]
    // 출력: [{year, quarter:1..4, electricity}]
    function toQuarterly(monthly) {
@@ -289,7 +289,7 @@
    window.SaveGreen.Forecast.runAllModels = runAllModels;
    window.SaveGreen.Forecast.makeEnsemble = makeEnsemble;
 
-   // [추가 노출] 월/분기 분해 & 메트릭
+   // 월/분기 분해 & 메트릭
    window.SaveGreen.Forecast.expandYearlyToMonthly = expandYearlyToMonthly;
    window.SaveGreen.Forecast.toQuarterly = toQuarterly;
    window.SaveGreen.Forecast.metrics = {

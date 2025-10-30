@@ -3,57 +3,65 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" th:href="@{/css/style.css}">
     <title>SAVE GREEN</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            background-color: #f4f8f4;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
-
-
-        /* 반응형 */
-        @media (max-width: 768px) {
-            nav {
-                gap: 15px;
-                font-size: 0.9rem;
-            }
-
-            .section {
-                padding: 15px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/greenFinderEnergy.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
+    
+    <!-- 헤더 -->
     <div th:replace="layouts/header :: header"></div>
-
-    <div class="container">
-
-        <div class="section">
+    <div class="main-container">
+    <h1 class="energy_bar">에너지 사용량</h1>
+    <div class="dashboard">
+        <!-- 월별 에너지 사용량 -->
+        <section class="chart-card">
             <h2>에너지 사용량(월별)</h2>
 
-        </div>
+            <div class="date-range">
+                <label>시작</label>
+                <input type="month" id="startMonth" readonly>
+                <span>~</span>
+                <label>종료</label>
+                <input type="month" id="endMonth" readonly>
+            </div>
 
-        <div class="section">
-            <h2>에너지 사용량(연식/용도)</h2>
+            <div class="chart-container">
+                <!-- 그래프 캔버스 -->
+                <canvas id="monthlyChart"></canvas>
+            </div>
 
-        </div>
+            <p class="chart-description">
+                
+            </p>
+        </section>
 
-        <a href="/GreenFinder" class="btn">건물 정보 검색 페이지로 이동</a>
+        <!-- 연식/용도별 에너지 사용량 -->
+        <section class="chart-card">
+            <h2>에너지 사용량(연식 / 용도)</h2>
+            <div class="date-range">
+                
+            </div>
+            <div class="chart-container">
+                <canvas id="usageChart"></canvas>
+            </div>
 
+            <p class="chart-description">
+                
+            </p>
+        </section>
     </div>
-</body>
+    <div class="map-btn-container">
+        <a href="/forecast" class="map_btn">GREEN REMODELING 페이지로 이동</a>
+        <a href="/simulator" class="map_btn">ENERGY SIMULATOR 페이지로 이동</a>
+        <a href="/GreenFinder" class="map_btn">건물 정보 검색 페이지로 이동</a>
+    </div>
+    </div>
+  <script th:src="@{/js/greenFinderEnergy.js}"></script>
 
+
+</body>
+<div th:replace="layouts/footer :: footer"></div>
 </html>

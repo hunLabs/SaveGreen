@@ -245,7 +245,6 @@
 		// [SG-LOGS] A 차트 시작: runId 로그 3줄 찍기
         try { await window.SaveGreen.MLLogs.consoleScoresByRunAndLetter('A'); } catch (e) {}
 
-
 		const { years, yhat } = opts || {};
 		const cr = (opts && opts.costRange) ? opts.costRange : null;
 
@@ -392,7 +391,6 @@
 		// [SG-LOGS] B 차트 시작: runId 로그 3줄 찍기
         try { await window.SaveGreen.MLLogs.consoleScoresByRunAndLetter('B'); } catch (e) {}
 
-
 		const { years, yhat } = opts || {};
 		const cr = (opts && opts.costRange) ? opts.costRange : null;
 
@@ -525,17 +523,6 @@
 		return doneMs;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
 	/* ============================================================
      * 5) MODEL C — 에너지 막대 + 비용 선 콤보 (막대 → 포인트 → 선)
      *
@@ -552,7 +539,6 @@
     	__clearStageTimers();
     	// [SG-LOGS] C 차트 시작: runId 로그 3줄 찍기 (C가 없으면 wA/wB 폴백)
         try { await window.SaveGreen.MLLogs.consoleScoresByRunAndLetter('C'); } catch (e) {}
-
 
     	// 1) 준비물
     	if (typeof Chart === 'undefined') { console.warn('Chart.js not loaded'); return; }
@@ -658,7 +644,7 @@
     			]
     		},
     		options: {
-    			// ★★★ Chart.js 내장 애니 전부 비활성화 → 전체 재애니 방지
+    			// Chart.js 내장 애니 전부 비활성화 → 전체 재애니 방지
     			animation: false,
     			normalized: true,
     			responsive: true,
@@ -799,8 +785,6 @@
     	// 15) 재참조용
     	window.energyChart = energyChart;
     }
-
-
 
 	/* ============================================================
 	 * 6) EXPORTS (전역/네임스페이스 노출)

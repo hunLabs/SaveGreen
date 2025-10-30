@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang=ko>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <title>SAVE GREEN</title>
   <style>
@@ -11,7 +10,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      /* font-family: Arial, sans-serif; */
     }
 
     body {
@@ -43,7 +42,7 @@
       max-width: 1200px;
       margin: 20px auto;
       padding: 15px;
-      padding-top: 17vh;
+      padding-top: 13vh;
     }
 
     .section {
@@ -54,9 +53,9 @@
       border: 1px solid #cfd8cf;
     }
 
-    .section h2 {
-      font-size: 1.3rem;
-      margin-bottom: 10px;
+    .section h1 {
+      /* font-size: 1.3rem;
+      margin-bottom: 10px; */
       color: #0b3d0b;
     }
 
@@ -76,6 +75,7 @@
     .highlight {
       color: #0b3d0b;
       font-weight: bold;
+      font-size: 22px !important;
     }
 
     /* 버튼 */
@@ -97,6 +97,15 @@
     .btn:hover {
       background: #145c14;
     }
+    p{
+      font-family: sans-serif;
+      font-size: 19px;
+      font-weight: 400;
+      
+    }
+    br{
+      line-height: 0.5 !important;
+    }
 
     li {
        list-style: none;
@@ -115,51 +124,81 @@
   </style>
 </head>
 <body>
-    <div th:replace="layouts/header :: header"></div>
+    <div th:replace=layouts/header :: header></div>
     <!-- <nav>  
-    <a href="#">SERVICE</a>
+    <a href=#>SERVICE</a>
     </nav> -->
 
     <!-- 메인 -->
-    <div class="container">
+    <div class=container>
 
-    <div class="section">
-        <h2>그린리모델링</h2>
+    <div class=section>
+        <h1>그린리모델링</h1><br>
         <p>
-        “<span class="highlight">그린리모델링으로 절세와 친환경을 한 번에 잡으세요.</span>”<br>
-        “<span class="highlight">G-SEED와 ZEB 인증</span>, 월세의 시작은 내 건물 관리에서부터!”
+        그린리모델링은 기존 건축물의 구조를 그대로 유지하면서, 단열 성능 개선·고효율 설비 교체·신재생에너지 도입 등을 통해<br>에너지 효율을 높이는 친환경 리모델링 방식입니다.<br><br>
+        최근에는 기존 건물뿐 아니라, 신축 단계에서부터 그린리모델링 요소를 반영하여<br> 건축 과정에서 발생하는 취득세·재산세 감면 혜택을 받을 수 있는 형태로 발전하고 있습니다.<br><br>
+        현재 대한민국의 대표적인 그린리모델링 관련 제도는<br><strong>G-SEED(녹색건축물 인증제도)</strong>와 <strong>ZEB(제로에너지건축물 인증제도)</strong> 두 가지가 있습니다.
         </p>
     </div>
 
-    <div class="section">
-        <h2>친환경 건축의 두 축</h2>
-        <div class="flex-box">
-        <div class="flex-item">
-            <h3>G-SEED와 ZEB</h3>
-            <p>녹색건축(G-seed)과 ZEB(Zero Energy Building)...</p>
-            <p><span class="highlight">G-SEED :</span> 자원 절약, 환경오염 저감...</p>
-            <p><span class="highlight">ZEB :</span> 에너지 사용을 최소화...</p>
+
+    <div class=section>
+        <h1>친환경 건축의 두 축</h1><br>
+        
+        
+            <h2>G-SEED와 ZEB</h2>
+            <p>녹색건축(G-seed)과 ZEB(Zero Energy Building)</p><br>
+            <p><strong>G-SEED</strong> :자원 절약, 환경오염 저감, 쾌적한 실내환경 조성 등 건축물의 종합적인 친환경 성능을 평가하는 제도입니다.<br>
+                  에너지뿐 아니라 재료, 수자원, 실내환경 등 다양한 항목을 통합적으로 평가하여, 환경적으로 지속 가능한 건축물을 유도합니다.</p><br>
+            <p><strong>ZEB</strong> :건물의 에너지 사용량을 최소화하고, 태양광·지열 등 신재생에너지 생산을 통해 에너지 자립을 실현하는 데 중점을 둔 제도입니다.<br>
+                  즉, 건물의 순에너지 소비량을 0에 가깝게 만드는 것을 목표로 합니다.</p><br>
+        
+        <div class=flex-item>
+            <p>요약하자면,<br>
+              G-SEED는 친환경 건축의 <strong>종합 평가 체계</strong><br>
+              ZEB는 탄소중립 실현을 위한 <strong>에너지 자립 중심 제도</strong>라고 할 수 있습니다.<br>
+              </p>
         </div>
-        <div class="flex-item">
-            <p>✔ 녹색건축물의 친환경 건축물 혜택 포함<br>
-                ✔ ZEB는 탄소중립형 건축 구역과 직접적 관계</p>
-        </div>
+        
+    </div>
+
+    <div class=section>
+        <h1>세제 혜택</h1><br>
+        <p>
+        그린리모델링 관련 인증 등급(G-SEED, ZEB)에 따라, 재산세감면, 취득세감면, 등 다양한 혜택이있습니다.<br><br> 자세한 사항은 우측 하단 첫번째 초록 아이콘을 누르시면 표로 확인 가능합니다. 또, 챗봇으로도 확인 가능합니다.<br><br>
+        세제 감면은 중복되지 않으며, 두 제도 중 더 높은 등급의 정책만 적용된다는 점을 유의해야 합니다.<br>
+    </div>
+
+    <div class=section>
+        <h1>해당 플랫폼의 목적 및 기능</h1><br>
+        <p>
+        냉난방 효율이나 에너지 절감 요소는 건물 신축 시점에서 설계에 반영하는 것이 가장 효과적입니다.<br>
+            이미 완공된 건물은 단열, 창호, 냉난방 설비 교체 등 리모델링 비용이 매우 크기 때문입니다.<br><br>
+        이 플랫폼은 이러한 점을 고려하여,
+            옥상 시공, 태양광 패널 구매·설치 비용에 대한 예상 절감 효과위주로<br> 검토할 수 있도록 설계되었습니다.<br><br>
+        <div class=flex-item>
+        <p>이 페이지를 활용하면,<br>
+          <strong>왜 그린리모델링이 필요한가</strong>에 대한 명확한 근거와
+          <strong>리모델링을 통해 얻을 수 있는 실제 이익</strong>을 함께 파악할 수 있습니다.<br>
+        </p>
         </div>
     </div>
 
-    <div class="section">
+
+<!-- 
+    <div class=section>
         <h2>절세 혜택</h2>
-        <div class="flex-box">
-        <div class="flex-item">
+        <div class=flex-box>
+        <div class=flex-item>
             <h3>ZEB (제로에너지건축물)</h3>
-            <ul class="">
+            <ul class=>
             <li>✔ 취득세 15% 감면</li>
             <li>✔ 재산세 최대 20% 감면</li>
             <li>✔ 법인세/소득세 세액 공제</li>
             <li>✔ 설계비 지원</li>
             </ul>
         </div>
-        <div class="flex-item">
+        <div class=flex-item>
             <h3>녹색건축물</h3>
             <ul>
             <li>✔ 취득세 최대 15% 감면</li>
@@ -168,10 +207,31 @@
             </ul>
         </div>
         </div>
-    </div>
+    </div> -->
 
-    <a href="/GreenFinder " class="btn">건물 정보 검색 페이지로 이동</a>
+    <a href="/GreenFinder"  class="btn">건물 정보 검색 페이지로 이동</a>
 
     </div>
-</body>
+    <div th:replace="layouts/footer :: footer"></div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const downloadBtn = document.getElementById("downloadAll");
+
+  // downloadBtn.classList.add('show');
+      if (downloadBtn) {
+        downloadBtn.style.display = "block";  
+      }
+      const chatbotWin = document.querySelector('.chatbot-window');
+      if (chatbotWin) {
+        chatbotWin.classList.remove('hidden'); 
+        chatbotWin.classList.add('show');      
+      }
+    });
+    </script>
+    <script th:src="@{/js/policy.js}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  </body>
+
+
 </html>

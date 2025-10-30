@@ -3,12 +3,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Simulator</title>
+    <title>SAVE GREEN</title>
     <link rel="stylesheet" th:href="@{/css/simulator.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="/fontawesome/css/all.min.css">
+    
 </head>
 <body>
 
@@ -19,10 +19,11 @@
 
 <div class="captureWrapper" style="width:100vw; overflow:visible;">
 <div class="simulator-index">
-    <div class="simulator-wrapper">  
+    <div class="simulator-wrapper" id="wrapper1">  
     <section class="simulator-container">
         <div class="simulator-input">
             <h3>에너지 효율 등급 시뮬레이터</h3>
+            <h5 style="color: #888;"><em>건물의 현재 에너지 등급,그에 따른 혜택 정보를 제공합니다.</em><br><br><br></h5>
             <form id="simulatorForm1" th:action="@{/simulate1}" method="post">
                 <input type="hidden" name="lat" id="lat1">
                 <input type="hidden" name="lon" id="lon1">
@@ -32,44 +33,65 @@
                 <input type="hidden" name="pct" id="percent">
                 <input type="hidden" name="bm" id="buildingMonthly">
                 <input type="hidden" name="cm" id="categoryMonthly">
-                <div class="form-group">
+                <div class="form-group show" id="eg1">
                     <img class="icon" src="/img/location.png" alt="Location Icon">
                     <input type="text" id="juso1" class="searchBox" placeholder="주소를 검색하세요(ex :시/구/동/상세주소)" autocomplete="off">
                     <div  class="dropdown searchResult"></div>
                 </div>
-                <div class="form-group">
+    
+
+                <div class="form-group hidden" id="eg2">
                     <img class="icon" src="/img/area.png" alt="Area Icon">
                     <label>m²</label>
                     <input type="number" name="area" step="any" id="area1" placeholder="건물 면적" required>
                 </div>
-                <div class="form-group">
+
+
+                <div class="form-group hidden" id="eg3" >
                     <img class="icon" src="/img/battery.png" alt="Battery Icon">
                     <label>kWh/년</label>
                     <input type="number" name="energy" id="energy1" step="any" placeholder="에너지" required >
                 </div>
-                <div class="form-group">
+
+
+                
+
+
+                <div class="form-group hidden" id="eg4" >
                     <img class="icon" src="/img/solarpanel.png" alt="Solar Panel Icon">
                     <label>대</label>
                     <input type="number" name="panelCount" placeholder="태양광 패널 개수(선택)">
                 </div>
-              
-                <div class="form-row">
-                     <select name="panelPower" >
-                        <option value="">패널 정격출력(선택)</option>
-                        <option value="400">400 Wp (Trina Solar Vertex S)</option>
-                        <option value="500">500 Wp (Hanwha Q Cells Q.PEAK DUO ML-G11)</option>               
-                        <option value="550">550 Wp (LONGi Hi-MO 6 Explorer)</option>
-                        <option value="600">600 Wp (JA Solar DeepBlue 3.0)</option>              
-                        <option value="640">640 Wp (Hanwha Q.TRON XL-G2R)</option>
-                        <option value="700">700 Wp (Jinko Solar Tiger Neo)</option>
+
+
+                <div class="form-row hidden" id="eg5" >
+                    <select name="panelPower" >
+                        <option value="">패널 정격출력(모델명)/면적</option>
+                        <option value="400">400 Wp (Trina Solar Vertex S)/1.8m²</option>
+                        <option value="500">500 Wp (Hanwha Q.PEAK DUO ML-G11)/2.3m²</option>               
+                        <option value="550">550 Wp (LONGi Hi-MO 6 Explorer)/2.5m²</option>
+                        <option value="600">600 Wp (JA Solar DeepBlue 3.0)/2.7m²</option>              
+                        <option value="640">640 Wp (Hanwha Q.TRON XL-G2R)/2.9m²</option>
+                        <option value="700">700 Wp (Jinko Solar Tiger Neo)3.2m²</option>
                     </select>
                 </div>
-              
-                <button type="submit" class="btn-submit">결과보기</button>
+                <p id="stepDescription"> <strong> 시뮬레이터 안내</strong><br>
+                    지도에서 건물을 선택하지 않으셨다면,<br>
+                    아래 입력창에 <strong>직접 주소를 검색</strong>해 주세요.<br>
+                    예: <em>서울특별시 중구 세종대로 110</em></p>
+                <div class="choice-buttons hidden" id="eg4-buttons">  
+                    <button type="button" class="btn-yes">예</button>
+                    <button type="button" class="btn-no">아니요</button>
+                </div>
+                <button type="button" id="nextBtn" class="btn-next">다음으로</button>
+                <div class="btn-group">
+                <button type="submit" class="btn-submit" id="left" style="display:none;">결과보기</button>
+                <!-- <button type="button" id="resetBtn1">내용 지우기</button> -->
+                </div>
             </form>
         </div>        
     </section>
-    
+    <!-- <div id="spinner" class="spinner hidden"></div> -->
     <section id="resultBox1" class="result-box1" style="display: none;">
         <h3 style="text-align:center !important;">시뮬레이션 결과<button type="button" id="guideBtn1" class="info-btn"><i class="fas fa-info-circle"></i></h3>
    
@@ -116,10 +138,11 @@
 
 
 
-    <div class="simulator-wrapper">  
+    <div class="simulator-wrapper" id="wrapper2">  
     <section class="simulator-container">
         <div class="simulator-input">
             <h3>태양광 에너지 효율·경제성 시뮬레이터</h3>
+            <h5 style="color: #888;"><em>건물의 현재 등급에 따른 목표 등급을 설정하면, 목표 등급까지의 필요 태양광 패널 개수를 계산하고, 패널이 설치 되었을때의 금전적,에너지적 효과를 보여줍니다.</em></h5>
             <form id="simulatorForm2" th:action="@{/simulate2}" method="post">
 
                 <input type="hidden" name="lat" id="lat2">
@@ -138,18 +161,18 @@
                 <input type="hidden" name="daySolar" id="daySolar">
              
                
-                <div class="form-group">
+                <div class="form-group show" id="sg1">
                     <img class="icon" src="/img/location.png" alt="Location Icon">
                     <input type="text" id="juso2" class="searchBox" placeholder="주소를 검색하세요(ex :시/구/동/상세주소)" autocomplete="off" required >
                     <div  class="dropdown searchResult"></div>
                 </div>
-                <div class="form-group">
+                <div class="form-group hidden" id="sg2">
                     <img class="icon" src="/img/area.png" alt="Area Icon">
                     <label>m²</label>
                     <input type="number" id="area2" step="any" name="area" placeholder="건물 면적" required>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row hidden" id="sg3">
                     <select name="currentGrade">
                         <option value="0">건물 등급 (현재)</option>
                         <option value="1">1+++등급</option>
@@ -177,19 +200,27 @@
                         <option value="10">7등급</option>
                     </select>
                 </div>
-                <div class="form-row">
-                      
+                <div class="form-row hidden" id="sg4">
                     <select name="panelPower"  required >
-                        <option value="">패널 정격출력</option>
-                        <option value="400">400 Wp (Trina Solar Vertex S)</option>
-                        <option value="500">500 Wp (Hanwha Q Cells Q.PEAK DUO ML-G11)</option>               
-                        <option value="550">550 Wp (LONGi Hi-MO 6 Explorer)</option>
-                        <option value="600">600 Wp (JA Solar DeepBlue 3.0)</option>              
-                        <option value="640">640 Wp (Hanwha Q.TRON XL-G2R)</option>
-                        <option value="700">700 Wp (Jinko Solar Tiger Neo)</option>
+                        <option value="">패널 정격출력(모델명)/면적</option>
+                        <option value="400">400 Wp (Trina Solar Vertex S)/1.8m²</option>
+                        <option value="500">500 Wp (Hanwha Q.PEAK DUO ML-G11)/2.3m²</option>               
+                        <option value="550">550 Wp (LONGi Hi-MO 6 Explorer)/2.5m²</option>
+                        <option value="600">600 Wp (JA Solar DeepBlue 3.0)/2.7m²</option>              
+                        <option value="640">640 Wp (Hanwha Q.TRON XL-G2R)/2.9m²</option>
+                        <option value="700">700 Wp (Jinko Solar Tiger Neo)3.2m²</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-submit" id="right">결과보기</button>
+                <p id="stepDescription2"> <strong> 시뮬레이터 안내</strong><br>
+                    지도에서 건물을 선택하지 않으셨다면,<br>
+                    아래 입력창에 <strong>직접 주소를 검색</strong>해 주세요.<br>
+                    예: <em>서울특별시 중구 세종대로 110</em></p>
+                    
+                <button type="button" id="nextBtn2" class="btn-next">다음으로</button>
+                <div class="btn-group">
+                <button type="submit" class="btn-submit" id="right" style="display: none;">결과보기</button>
+                <!-- <button type="button" id="resetBtn2">내용 지우기</button> -->
+                </div>
             </form>
         </div>
     </section>
@@ -220,22 +251,11 @@
     </section>
     </div> 
 </div>
-    <div class="floating-btns">
-        <input type="file" id="csvFile" name="file" accept=".csv" style="display:none;">
-        <button id="downloadAll" title="정책 CSV 다운로드">
-        <i class="fa-solid fa-download"></i>
-        </button>
-        <button id="uploadAll" title="정책 CSV 업로드">
-        <i class="fa-solid fa-upload"></i>
-        </button>
-        <button id="downloadBtn" title="PDF로 저장">
-        <i class="fa-solid fa-file-pdf"></i>
-        </button>
-        <button id="sendMailBtn" title="메일로 보내기">
-        <i class="fa-solid fa-envelope"></i>
-        </button>
-    </div>
-    
+
+    <div id="aiText" style="display: none;">나의 Ai <strong>분석</strong> 보기 </div>
+    <button id="aiSummaryBtn" class="btn btn-success">분석 시작!</button>
+    <div class="ai-summary-container">  
+    <div id="aiResult" style="white-space: pre-line; margin-top: 10px;"></div>
 
     <div id="compareText" style="display: none;">나의 시뮬레이터 <strong>결과차트</strong> 보기 </div>
     <br>
@@ -249,14 +269,21 @@
     </div>
     </div>
     <canvas id="solarEfficiencyChart" style="display:none">누적 비교차트</canvas>
-    
-    <hr>
-    <div class="ai-summary-container">
-    <button id="aiSummaryBtn" class="btn btn-success">AI 분석</button>
-    <div id="aiResult" style="white-space: pre-line; margin-top: 10px;"></div>
+
+    <div class = "pdfBtn" style="display: none;">
+        <button id="downloadBtn">
+        <i class="fa-solid fa-file-pdf"></i>PDF로 저장
+        </button>
+        <button id="sendMailBtn" >
+        <i class="fa-solid fa-envelope"></i>메일로 보내기
+        </button>
     </div>
-    <br><br>
+    </div>
+    
+    
 </div>
+     
+    
 
 
    
@@ -275,5 +302,5 @@
 
 
 </body>
-<!-- <div th:replace="layouts/footer :: footer"></div> -->
+<div th:replace="layouts/footer :: footer"></div>
 </html>

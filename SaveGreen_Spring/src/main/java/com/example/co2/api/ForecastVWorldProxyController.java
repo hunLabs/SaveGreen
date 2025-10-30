@@ -23,9 +23,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping({"/api/ext/vworld", "/api/forecast/ext/vworld"})
 public class ForecastVWorldProxyController {
 
-	// [설정] application.properties / yaml 에서 주입
-	@Value("${app.vworld.key}")
- 	private String vworldKey;
+// [설정] application.properties / yaml 에서 주입
+@Value("${app.vworld.key}")
+	private String vworldKey;
 
 	// [간단] RestTemplate 내부 생성(프로젝트에서 Bean을 쓰면 교체 가능)
 	private final RestTemplate rest = new RestTemplate();
@@ -36,10 +36,10 @@ public class ForecastVWorldProxyController {
 	// ---------------------------------------------------------------------
 	@GetMapping(value = "/revgeo", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Object reverseGeocode(
-        @RequestParam("lat") double lat,
-        @RequestParam("lon") double lon
- 	) {
- 		// [중요] VWorld 주소 API: req/address (type=both → 도로명+지번 동시)
+			@RequestParam("lat") double lat,
+			@RequestParam("lon") double lon
+	) {
+		// [중요] VWorld 주소 API: req/address (type=both → 도로명+지번 동시)
  		String url = "https://api.vworld.kr/req/address";
 
  		// [구성] 쿼리스트링 파라미터
@@ -92,5 +92,5 @@ public class ForecastVWorldProxyController {
 
  		log.debug("[forecast-ext] parcel GET {}", fullUrl);
  		return rest.getForObject(fullUrl, Object.class);
-    }
+ 	}
 }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>SAVE GREEN(정책 업로드)</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body style="
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  height:100vh;
+  background:#f7f7f7;
+  font-family:sans-serif;
+  color:#333;
+  cursor:pointer;
+  text-align:center;
+">
+  
+  <input type="file" id="csvFile" accept=".csv" style="display:none;">
+
+  <script>
+  const fileInput = document.getElementById("csvFile");
+
+  document.addEventListener("click", () => {
+    fileInput.click(); // ✅ 사용자의 실제 클릭 이벤트이므로 허용됨
+  });
+
+  fileInput.addEventListener("change", async () => {
+    if (!fileInput.files.length) return;
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    Swal.fire({ 
+      title: "업로드 중...",
+      didOpen: () => Swal.showLoading(),
+      allowOutsideClick: false 
+    });
+
+    try {
+      const resp = await fetch("/policy/upload-all", { method: "POST", body: formData });
+      const msg = await resp.text();
+      Swal.fire("업로드 결과", msg, resp.ok ? "success" : "error");
+    } catch (e) {
+      console.error(e);
+      Swal.fire("오류", "업로드 중 문제가 발생했습니다.", "error");
+    }
+  });
+  </script>
+</body>
+</html>

@@ -9,8 +9,28 @@
     * 2025-09-29 : 초기작성
 -->
 
-<!-- <div th:fragment="footer">
+<div th:fragment="footer">
+  <link rel="stylesheet" href="/fontawesome/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/footer.css}">
+  
     <footer class="footer">
-        <p>© 2025 SaveGreen. All rights reserved.</p>
+        <!-- <p>© 2025 SaveGreen. All rights reserved.</p> -->
+    <div class="chatbot-window hidden">
+      <div class="chatbot-header">
+        <span>SaveGreen 도우미</span>
+        <button class="chatbot-close">&times;</button>
+      </div>
+      <div class="chatbot-body"></div>
+    </div>
+    <div class="floating-btns">
+        <input type="file" id="csvFile" name="file" accept=".csv" style="display:none;">
+        <button id="downloadAll"  style="display: none;" title="정책 데이터 확인하기">
+        <i class="fa-solid fa-file-contract"></i>
+        </button>
+        <button id="chatbot" title="챗봇">
+        <i class="fa-solid fa-robot"></i>
+        </button>        
+    </div>
     </footer>
-</div> -->
+    
+</div>

@@ -15,13 +15,20 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/policy")
 public class PolicyController {
+
+    @GetMapping("/auto-upload")
+    public String autoUploadPage() {
+    return "html/auto-upload"; 
+}
 
     private final TaxPolicyRepository taxPolicyRepository;
     private final ZebPolicyRepository zebPolicyRepository;
@@ -188,5 +195,24 @@ public ResponseEntity<String> uploadAllPolicies(@RequestParam("file") MultipartF
         try { return (val == null || val.isEmpty()) ? null : Integer.parseInt(val); }
         catch (Exception e) { return null; }
     }
+
+ 
+
+    @GetMapping("/list-all")
+    public ResponseEntity<Object> getAllPolicies() {
+        List<TaxPolicy> taxList = taxPolicyRepository.findAll();
+        List<ZebPolicy> zebList = zebPolicyRepository.findAll();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("tax", taxList);
+        result.put("zeb", zebList);
+
+        return ResponseEntity.ok(result);
+    }
+
+
+
+
+
 }
 
