@@ -83,7 +83,7 @@ ml/  (FastAPI)
 ├─ data/            # model_A.pkl, model_B.pkl, model.pkl, manifest.json
 └─ logs/app/*.jsonl # runId 단위 로그
 ---
-\``
+\```
 
 ## 📊 시스템 아키텍처
 ```text
@@ -96,5 +96,5 @@ ml/  (FastAPI)
                        ├─ /predict?variant=A|B|C
                        ├─ /train, /train/status
                        └─ ./data (model.pkl, manifest.json), logs/app/*.jsonl
-\``
+\```
 ---
