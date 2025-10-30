@@ -82,8 +82,8 @@ ml/  (FastAPI)
 ├─ app/train.py     # 8:2 split + K-Fold + 후보모델 비교/튜닝
 ├─ data/            # model_A.pkl, model_B.pkl, model.pkl, manifest.json
 └─ logs/app/*.jsonl # runId 단위 로그
-\``
 ---
+\``
 
 ## 📊 시스템 아키텍처
 ```text
