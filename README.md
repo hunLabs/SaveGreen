@@ -11,8 +11,10 @@
 - [프로젝트 개요]
 - [기술 스택]
 - [주요 기능]
-- [시스템 아키텍처
 - [프로젝트 구조]
+- [시스템 아키텍처
+
+  
 ---
 
 ## 🚀 프로젝트 개요
@@ -58,21 +60,8 @@
    - FastAPI 학습/예측 로그 JSONL → Spring API로 노출 → 콘솔 포맷 출력
 
 ---
-## 📊 시스템 아키텍처
-```text
-[User]
-  ⇅  Web (Thymeleaf, Chart.js, ES Modules)
-[Spring Boot Backend]
-  ├─ REST: /forecast, /api/forecast/ml/*
-  ├─ MySQL: api_cache (TTL, UPSERT), logs mirror
-  └─ Proxy/Bridge → [FastAPI ML Service]
-                       ├─ /predict?variant=A|B|C
-                       ├─ /train, /train/status
-                       └─ ./data (model.pkl, manifest.json), logs/app/*.jsonl
 
----
 ## 📁 프로젝트 구조
-
 SaveGreen_Spring/
 ├─ src/main/java/com/example/co2/
 │  ├─ api/        # ForecastApiController, ForecastMlController 등
@@ -94,3 +83,18 @@ ml/  (FastAPI)
 ├─ data/            # model_A.pkl, model_B.pkl, model.pkl, manifest.json
 └─ logs/app/*.jsonl # runId 단위 로그
 
+---
+
+## 📊 시스템 아키텍처
+```text
+[User]
+  ⇅  Web (Thymeleaf, Chart.js, ES Modules)
+[Spring Boot Backend]
+  ├─ REST: /forecast, /api/forecast/ml/*
+  ├─ MySQL: api_cache (TTL, UPSERT), logs mirror
+  └─ Proxy/Bridge → [FastAPI ML Service]
+                       ├─ /predict?variant=A|B|C
+                       ├─ /train, /train/status
+                       └─ ./data (model.pkl, manifest.json), logs/app/*.jsonl
+
+---
