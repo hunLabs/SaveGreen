@@ -76,14 +76,16 @@ SaveGreen_Spring/
 │  ├─ templates/  # forecast.html 등
 │  └─ application.properties
 └─ build.gradle
+
 ml/  (FastAPI)
 ├─ app/main.py      # /predict, /train 엔드포인트
 ├─ app/model.py     # A/B/C 모델 로딩·추론 로직
 ├─ app/train.py     # 8:2 split + K-Fold + 후보모델 비교/튜닝
 ├─ data/            # model_A.pkl, model_B.pkl, model.pkl, manifest.json
 └─ logs/app/*.jsonl # runId 단위 로그
+```
+
 ---
-\```
 
 ## 📊 시스템 아키텍처
 ```text
@@ -96,5 +98,5 @@ ml/  (FastAPI)
                        ├─ /predict?variant=A|B|C
                        ├─ /train, /train/status
                        └─ ./data (model.pkl, manifest.json), logs/app/*.jsonl
-\```
+```
 ---
