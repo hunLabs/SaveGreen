@@ -13,7 +13,6 @@
 - [주요 기능]
 - [프로젝트 구조]
 - [시스템 아키텍처
-
   
 ---
 
@@ -21,7 +20,7 @@
 - **프로젝트명:** Save Green  
 - **목표:** 데이터 기반 의사결정으로 건물의 에너지 비용과 탄소 배출을 절감  
 - **형태:** 웹 서비스 (Spring Boot + Thymeleaf + Chart.js + FastAPI ML)  
-- **기간:** 2025.07 ~ 2025.10 (예시)  
+- **기간:** 2025.09.17 ~ 2025.11.05
 - **구성:** 팀 프로젝트
 
 ---
@@ -62,6 +61,7 @@
 ---
 
 ## 📁 프로젝트 구조
+```text
 SaveGreen_Spring/
 ├─ src/main/java/com/example/co2/
 │  ├─ api/        # ForecastApiController, ForecastMlController 등
@@ -82,7 +82,7 @@ ml/  (FastAPI)
 ├─ app/train.py     # 8:2 split + K-Fold + 후보모델 비교/튜닝
 ├─ data/            # model_A.pkl, model_B.pkl, model.pkl, manifest.json
 └─ logs/app/*.jsonl # runId 단위 로그
-
+\``
 ---
 
 ## 📊 시스템 아키텍처
@@ -96,5 +96,5 @@ ml/  (FastAPI)
                        ├─ /predict?variant=A|B|C
                        ├─ /train, /train/status
                        └─ ./data (model.pkl, manifest.json), logs/app/*.jsonl
-
+\``
 ---
